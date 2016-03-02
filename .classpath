@@ -1,6 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/jorbis-0.0.15.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/jogg-0.0.7.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/jnlp.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/tinylinepp.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/ibxm.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/slick-examples.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/slick.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/natives-windows.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/natives-linux.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/natives-mac.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/lwjgl_util.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/lwjgl_util_applet.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/jinput.jar"/>
+	<classpathentry kind="lib" path="/home/ameba20/Scaricati/slick/lib/lwjgl.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
