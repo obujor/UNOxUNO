@@ -1,18 +1,16 @@
-package org.unoxuno;
-
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
 
-public class ServerDiProva extends UnicastRemoteObject 
-implements InterfacciaDiProva{
+public class RMISquareRootServer extends UnicastRemoteObject 
+implements ISquareRoot{
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 1L;
 
-	public ServerDiProva()throws RemoteException
+	public RMISquareRootServer()throws RemoteException
 	 {
 	  
 	 }
@@ -26,8 +24,8 @@ implements InterfacciaDiProva{
 	 {
 	  try 
 	  {
-	   InterfacciaDiProva server = new ServerDiProva();
-	   Naming.rebind("//localhost/ServerDiProva",server);
+	   ISquareRoot server = new RMISquareRootServer();
+	   Naming.rebind("//localhost/RMISquareRoot",server);
 	  }
 	  catch (RemoteException e){e.printStackTrace( );}
 	  catch (MalformedURLException e) {e.printStackTrace( );}
