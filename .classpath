@@ -1,20 +1,24 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
 	<classpathentry kind="src" path="src"/>
-	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="lib/ibxm.jar"/>
-	<classpathentry kind="lib" path="lib/jinput.jar"/>
-	<classpathentry kind="lib" path="lib/jnlp.jar"/>
-	<classpathentry kind="lib" path="lib/jogg-0.0.7.jar"/>
-	<classpathentry kind="lib" path="lib/jorbis-0.0.15.jar"/>
-	<classpathentry kind="lib" path="lib/lwjgl_util_applet.jar"/>
-	<classpathentry kind="lib" path="lib/lwjgl_util.jar"/>
-	<classpathentry kind="lib" path="lib/lwjgl.jar"/>
-	<classpathentry kind="lib" path="lib/natives-linux.jar"/>
-	<classpathentry kind="lib" path="lib/natives-mac.jar"/>
-	<classpathentry kind="lib" path="lib/natives-windows.jar"/>
-	<classpathentry kind="lib" path="lib/slick-examples.jar"/>
-	<classpathentry kind="lib" path="lib/slick.jar"/>
-	<classpathentry kind="lib" path="lib/tinylinepp.jar"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER">
+		<attributes>
+			<attribute name="org.eclipse.jdt.launching.CLASSPATH_ATTR_LIBRARY_PATH_ENTRY" value="unoxuno/lib/native"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry exported="true" kind="lib" path="lib/ibxm.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jinput.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jnlp.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jogg-0.0.7.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/jorbis-0.0.15.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lwjgl_util_applet.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lwjgl_util.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/lwjgl.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/natives-linux.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/natives-mac.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/natives-windows.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slick-examples.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/slick.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/tinylinepp.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
