@@ -21,32 +21,63 @@ implements IUno{
 
 		@Override
 		public void run() {
-			int nextId = (myId +1)% playersnames.size();
-			if (nextId != myId){
-				String nextname = playersnames.get(nextId);
-				try
-				{
-					IUno tempServer = 
-					(IUno) Naming.lookup("rmi://localhost/"+nextname);
-					tempServer.ping();
-				}
-				catch(ConnectException e){
-					System.out.println("Successivo non trovato, rimozione");
-					playersnames.remove(nextId);
-				}
-				catch(NotBoundException e)
-				{
-					e.printStackTrace( );
-				}
-				catch(RemoteException e)
-			  	{
-					e.printStackTrace( );
-			  	}
-				catch(MalformedURLException e)
-				{
-					e.printStackTrace( );
+			boolean changed = false;
+			boolean checknext = true;
+			while (checknext){
+				checknext = false;
+				int nextId = (myId +1)% playersnames.size();
+				if (nextId != myId){
+					String nextname = playersnames.get(nextId);
+					try
+					{
+						IUno tempServer = 
+								(IUno) Naming.lookup("rmi://localhost/"+nextname);
+						tempServer.ping(playersnames.get(myId));
+					}
+					catch(ConnectException e){
+						System.out.println("Successivo non trovato, rimozione");
+						playersnames.remove(nextId);
+						checknext = true;
+						changed = true;
+					}
+					catch(NotBoundException e)
+					{
+						e.printStackTrace( );
+					}
+					catch(RemoteException e)
+					{
+						e.printStackTrace( );
+					}
+					catch(MalformedURLException e)
+					{
+						e.printStackTrace( );
+					}
 				}
 			}
+			if (changed){
+				try
+			  {
+				for (int i=0; i<playersnames.size(); i++){
+					if (i != myId){
+						IUno tempServer = 
+								(IUno) Naming.lookup("rmi://localhost/"+playersnames.get(i));
+						tempServer.refreshUserList(playersnames);
+					}
+				}
+			  }
+			  catch(NotBoundException e)
+			  {
+			   e.printStackTrace( );
+			  }
+			  catch(RemoteException e)
+			  {
+			   e.printStackTrace( );
+			  }
+			  catch(MalformedURLException e)
+			  {
+			   e.printStackTrace( );
+			  }
+		}
 		}
 		
 	}
@@ -140,8 +171,8 @@ implements IUno{
 	}
 
 	@Override
-	public void ping() throws RemoteException {
-		System.out.println("Pingato");
+	public void ping(String name) throws RemoteException {
+		System.out.println("Pingato da "+name);
 		
 	}
 
