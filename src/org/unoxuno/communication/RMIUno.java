@@ -1,3 +1,4 @@
+package org.unoxuno.communication;
 
 import java.net.MalformedURLException;
 import java.rmi.ConnectException;
@@ -5,7 +6,6 @@ import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.ArrayList;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -15,7 +15,7 @@ implements IUno{
 	private static final long serialVersionUID = 1L;
 	String nickname;
 	int myId;
-	ArrayList<String> playersnames = null;
+	GameState state;
 	
 	private class Task extends TimerTask{
 
@@ -25,20 +25,23 @@ implements IUno{
 			boolean checknext = true;
 			while (checknext){
 				checknext = false;
-				int nextId = (myId +1)% playersnames.size();
+				int nextId = state.getNextId(myId);
 				if (nextId != myId){
-					String nextname = playersnames.get(nextId);
+					String nextname = state.getUsername(nextId);
 					try
 					{
 						IUno tempServer = 
 								(IUno) Naming.lookup("rmi://localhost/"+nextname);
-						tempServer.ping(playersnames.get(myId));
+						tempServer.ping(nickname);
 					}
 					catch(ConnectException e){
 						System.out.println("Successivo non trovato, rimozione");
-						playersnames.remove(nextId);
+						state.removeUser(nextId);
 						checknext = true;
 						changed = true;
+						if (nextId < myId){
+							myId--;
+						}
 					}
 					catch(NotBoundException e)
 					{
@@ -57,11 +60,11 @@ implements IUno{
 			if (changed){
 				try
 			  {
-				for (int i=0; i<playersnames.size(); i++){
+				for (int i=0; i<state.getNumberOfUsers(); i++){
 					if (i != myId){
 						IUno tempServer = 
-								(IUno) Naming.lookup("rmi://localhost/"+playersnames.get(i));
-						tempServer.refreshUserList(playersnames);
+								(IUno) Naming.lookup("rmi://localhost/"+state.getUsername(i));
+						tempServer.refreshState(state);
 					}
 				}
 			  }
@@ -82,12 +85,11 @@ implements IUno{
 		
 	}
 	 public RMIUno(String name)throws RemoteException{
-		 this.playersnames = new ArrayList<String>();
 		 this.nickname = name;
-		 this.playersnames.add(name);
+		 state = new GameState(name);
 		 this.myId = 0;
-		Timer t = new Timer();
-		t.scheduleAtFixedRate(new Task(), 2000, 2000);
+		 Timer t = new Timer();
+		 t.scheduleAtFixedRate(new Task(), 2000, 2000);
 
 	 }
 	 
@@ -133,15 +135,17 @@ implements IUno{
 
 	@Override
 	public void connectReply(String name) throws RemoteException {
-		this.playersnames.add(name);
+		state.addUser(name);
 		//System.out.print(playersnames);
 		System.out.println("Utente entrato in stanza: "+name);
 		try
 		  {
-			for (String n: playersnames){
-		   IUno tempServer = 
-		      (IUno) Naming.lookup("rmi://localhost/"+n);
-		   tempServer.refreshUserList(playersnames);
+			for (int i=0; i<state.getNumberOfUsers(); i++){
+				if (i != myId){
+					IUno tempServer = 
+							(IUno) Naming.lookup("rmi://localhost/"+state.getUsername(i));
+					tempServer.refreshState(state);
+				}
 			}
 		  }
 		  catch(NotBoundException e)
@@ -159,15 +163,10 @@ implements IUno{
 	}
 
 	@Override
-	public void refreshUserList(ArrayList<String> users) throws RemoteException {
-		this.playersnames = users;
+	public void refreshState(GameState s) throws RemoteException {
+		state = s;
 		//System.out.print(playersnames);
-		for (int i=0; i<users.size(); i++){
-			String u = users.get(i);
-			if (u.equals(this.nickname))
-				myId = i;
-		}
-		
+		myId = state.getUserId(nickname);
 	}
 
 	@Override
