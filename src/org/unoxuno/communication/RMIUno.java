@@ -105,9 +105,9 @@ implements IUno{
 	 }
 	 
 	 public static void main(String[] args) throws RemoteException {
-		 RMIUno server = new RMIUno(args[0],args[3]);
-		 if (args.length == 3)
-				  server.connectSend(args[0],args[1],args[2]);
+		 RMIUno server = new RMIUno(args[1],args[0]);
+		 if (args.length == 4)
+				  server.connectSend(args[0],args[2],args[3]);
 		 		  server.token = true;
 			  
 	 }
