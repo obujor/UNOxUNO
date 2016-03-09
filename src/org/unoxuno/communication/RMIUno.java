@@ -5,6 +5,8 @@ import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.server.RemoteServer;
+import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -14,7 +16,6 @@ implements IUno{
 	
 	private static final long serialVersionUID = 1L;
 	String nickname;
-	String domain;
 	int myId;
 	GameState state;
 	boolean token = false;
@@ -87,13 +88,12 @@ implements IUno{
 		}
 		
 	}
-	 public RMIUno(String name, String dom)throws RemoteException{
+	 public RMIUno(String name)throws RemoteException{
 		 this.nickname = name;
-		 this.domain = dom;
-		 state = new GameState(name,dom);
+		 state = new GameState(name,"localhost");
 		 this.myId = 0;
 		 try{
-			 Naming.rebind("//"+dom+"/"+name,this);
+			 Naming.rebind("//localhost"+name,this);
 		 }
 		 catch(MalformedURLException e)
 		 {
@@ -105,19 +105,19 @@ implements IUno{
 	 }
 	 
 	 public static void main(String[] args) throws RemoteException {
-		 RMIUno server = new RMIUno(args[1],args[0]);
-		 if (args.length == 4)
-				  server.connectSend(args[0],args[1],args[2],args[3]);
+		 RMIUno server = new RMIUno(args[0]);
+		 if (args.length == 3)
+				  server.connectSend(args[0],args[1],args[2]);
 		 		  server.token = true;
 			  
 	 }
 	 
-	 private void connectSend(String mydom,String myname, String serverdom, String servername){
+	 private void connectSend(String myname, String serverdom, String servername){
 		 try
 		  {
 		   IUno tempServer = 
 		      (IUno) Naming.lookup("rmi://"+serverdom+"/"+servername);
-		   tempServer.connectReply(mydom,myname);
+		   tempServer.connectReply(myname);
 		  }
 		  catch(NotBoundException e)
 		  {
@@ -134,8 +134,12 @@ implements IUno{
 	 }
 
 	@Override
-	public void connectReply(String dom,String name) throws RemoteException {
-		state.addUser(name,dom);
+	public void connectReply(String name) throws RemoteException {
+		try {
+			state.addUser(name,RemoteServer.getClientHost());
+		} catch (ServerNotActiveException e1) {
+			e1.printStackTrace();
+		}
 		//System.out.print(playersnames);
 		System.out.println("Utente entrato in stanza: "+name);
 		try
