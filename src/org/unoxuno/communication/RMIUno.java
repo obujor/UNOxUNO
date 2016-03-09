@@ -16,6 +16,7 @@ implements IUno{
 	String nickname;
 	int myId;
 	GameState state;
+	boolean token = false;
 	
 	private class Task extends TimerTask{
 
@@ -97,6 +98,7 @@ implements IUno{
 		 RMIUno server = createServer(args[0]);
 		 if (args.length == 2)
 				  server.connectSend(args[0],args[1]);
+		 		  server.token = true;
 			  
 	 }
 		  
