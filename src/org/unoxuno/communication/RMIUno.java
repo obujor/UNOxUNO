@@ -5,6 +5,8 @@ import java.rmi.ConnectException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.rmi.registry.LocateRegistry;
+import java.rmi.registry.Registry;
 import java.rmi.server.RemoteServer;
 import java.rmi.server.ServerNotActiveException;
 import java.rmi.server.UnicastRemoteObject;
@@ -19,8 +21,9 @@ implements IUno{
 	int myId;
 	GameState state;
 	boolean token = false;
+	Registry localRegistry;
 	
-	private class Task extends TimerTask{
+	/*private class Task extends TimerTask{
 
 		@Override
 		public void run() {
@@ -88,35 +91,34 @@ implements IUno{
 		}
 		
 	}
-	 public RMIUno(String name,String dom)throws RemoteException{
+	*/
+	 public RMIUno(String name,int port)throws RemoteException{
 		 this.nickname = name;
-		 state = new GameState(name,dom);
+		 state = new GameState(name);
 		 this.myId = 0;
-		 try{
-			 Naming.rebind("//"+dom+"/"+name,this);
-		 }
-		 catch(MalformedURLException e)
-		 {
-			 e.printStackTrace();
-		 }
-		 Timer t = new Timer();
-		 t.scheduleAtFixedRate(new Task(), 2000, 2000);
+		 localRegistry = LocateRegistry.createRegistry(port);
+		 localRegistry.rebind(name, this);
+		 System.out.println("Binding eseguito su "+name+" in porta "+port);
+			 //Naming.rebind("//"+dom+"/"+name,this);
+		 //Timer t = new Timer();
+		 //t.scheduleAtFixedRate(new Task(), 2000, 2000);
 
 	 }
 	 
 	 public static void main(String[] args) throws RemoteException {
-		 RMIUno server = new RMIUno(args[1],args[0]);
-		 if (args.length == 4)
-				  server.connectSend(args[0],args[2],args[3]);
+		 RMIUno server = new RMIUno(args[0],Integer.parseInt(args[1]));
+		 if (args.length == 5)
+				  server.connectSend(args[0],Integer.parseInt(args[4]),args[2],args[3]);
 		 		  server.token = true;
 			  
 	 }
 	 
-	 private void connectSend(String myname, String serverdom, String servername){
+	 private void connectSend(String myname, int serverport, String servername, String serverdom){
 		 try
 		  {
-		   IUno tempServer = 
-		      (IUno) Naming.lookup("rmi://"+serverdom+"/"+servername);
+			 System.out.println("Tentativo di connessione da parte di "+myname+" su "+servername+" con porta "+serverport+" all'indirizzo "+serverdom);
+			 Registry tempRegistry = LocateRegistry.getRegistry(serverdom, serverport);
+			 IUno tempServer = (IUno) tempRegistry.lookup(servername);
 		   tempServer.connectReply(myname);
 		  }
 		  catch(NotBoundException e)
@@ -127,22 +129,15 @@ implements IUno{
 		  {
 		   e.printStackTrace( );
 		  }
-		  catch(MalformedURLException e)
-		  {
-		   e.printStackTrace( );
-		  }
-	 }
+		 }
 
 	@Override
 	public void connectReply(String name) throws RemoteException {
-		try {
-			state.addUser(name,getClientHost());
-		} catch (ServerNotActiveException e1) {
-			e1.printStackTrace();
-		}
+		System.out.println("Richiesta ricevuta da "+name);
+		state.addUser(name);
 		//System.out.print(playersnames);
 		System.out.println("Utente entrato in stanza: "+name);
-		try
+		/*try
 		  {
 			for (int i=0; i<state.getNumberOfUsers(); i++){
 				if (i != myId){
@@ -163,7 +158,7 @@ implements IUno{
 		  catch(MalformedURLException e)
 		  {
 		   e.printStackTrace( );
-		  }
+		  }*/
 	}
 
 	@Override
