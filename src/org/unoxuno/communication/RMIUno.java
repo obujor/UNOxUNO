@@ -88,12 +88,12 @@ implements IUno{
 		}
 		
 	}
-	 public RMIUno(String name)throws RemoteException{
+	 public RMIUno(String name,String dom)throws RemoteException{
 		 this.nickname = name;
-		 state = new GameState(name,"localhost");
+		 state = new GameState(name,dom);
 		 this.myId = 0;
 		 try{
-			 Naming.rebind("//localhost/"+name,this);
+			 Naming.rebind("//"+dom+"/"+name,this);
 		 }
 		 catch(MalformedURLException e)
 		 {
@@ -105,7 +105,7 @@ implements IUno{
 	 }
 	 
 	 public static void main(String[] args) throws RemoteException {
-		 RMIUno server = new RMIUno(args[0]);
+		 RMIUno server = new RMIUno(args[0],args[3]);
 		 if (args.length == 3)
 				  server.connectSend(args[0],args[1],args[2]);
 		 		  server.token = true;
