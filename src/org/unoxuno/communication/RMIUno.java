@@ -93,7 +93,7 @@ implements IUno{
 		 state = new GameState(name,"localhost");
 		 this.myId = 0;
 		 try{
-			 Naming.rebind("//localhost"+name,this);
+			 Naming.rebind("//localhost/"+name,this);
 		 }
 		 catch(MalformedURLException e)
 		 {
@@ -136,7 +136,7 @@ implements IUno{
 	@Override
 	public void connectReply(String name) throws RemoteException {
 		try {
-			state.addUser(name,RemoteServer.getClientHost());
+			state.addUser(name,getClientHost());
 		} catch (ServerNotActiveException e1) {
 			e1.printStackTrace();
 		}
