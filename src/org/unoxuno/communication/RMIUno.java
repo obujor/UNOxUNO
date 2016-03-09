@@ -14,6 +14,7 @@ implements IUno{
 	
 	private static final long serialVersionUID = 1L;
 	String nickname;
+	String domain;
 	int myId;
 	GameState state;
 	boolean token = false;
@@ -29,10 +30,11 @@ implements IUno{
 				int nextId = state.getNextId(myId);
 				if (nextId != myId){
 					String nextname = state.getUsername(nextId);
+					String nextdomain = state.getDomain(nextId);
 					try
 					{
 						IUno tempServer = 
-								(IUno) Naming.lookup("rmi://localhost/"+nextname);
+								(IUno) Naming.lookup("rmi://"+nextdomain+"/"+nextname);
 						tempServer.ping(nickname);
 					}
 					catch(ConnectException e){
@@ -64,7 +66,7 @@ implements IUno{
 				for (int i=0; i<state.getNumberOfUsers(); i++){
 					if (i != myId){
 						IUno tempServer = 
-								(IUno) Naming.lookup("rmi://localhost/"+state.getUsername(i));
+								(IUno) Naming.lookup("rmi://"+state.getDomain(i)+"/"+state.getUsername(i));
 						tempServer.refreshState(state);
 					}
 				}
@@ -85,41 +87,37 @@ implements IUno{
 		}
 		
 	}
-	 public RMIUno(String name)throws RemoteException{
+	 public RMIUno(String name, String dom)throws RemoteException{
 		 this.nickname = name;
-		 state = new GameState(name);
+		 this.domain = dom;
+		 state = new GameState(name,dom);
 		 this.myId = 0;
+		 try{
+			 Naming.rebind("//"+dom+"/"+name,this);
+		 }
+		 catch(MalformedURLException e)
+		 {
+			 e.printStackTrace();
+		 }
 		 Timer t = new Timer();
 		 t.scheduleAtFixedRate(new Task(), 2000, 2000);
 
 	 }
 	 
-	 public static void main(String[] args) {
-		 RMIUno server = createServer(args[0]);
-		 if (args.length == 2)
-				  server.connectSend(args[0],args[1]);
+	 public static void main(String[] args) throws RemoteException {
+		 RMIUno server = new RMIUno(args[1],args[0]);
+		 if (args.length == 4)
+				  server.connectSend(args[0],args[1],args[2],args[3]);
 		 		  server.token = true;
 			  
 	 }
-		  
-	 private static RMIUno createServer(String name){
-			RMIUno server = null;
-		 	try 
-			  {
-			   server = new RMIUno(name);
-			   Naming.rebind("//localhost/"+name,server);
-			  }
-			  catch (RemoteException e){e.printStackTrace( );}
-			  catch (MalformedURLException e) {e.printStackTrace( );}
-			return server;
-	 }
 	 
-	 private void connectSend(String myname, String servername){
+	 private void connectSend(String mydom,String myname, String serverdom, String servername){
 		 try
 		  {
 		   IUno tempServer = 
-		      (IUno) Naming.lookup("rmi://localhost/"+servername);
-		   tempServer.connectReply(myname);
+		      (IUno) Naming.lookup("rmi://"+serverdom+"/"+servername);
+		   tempServer.connectReply(mydom,myname);
 		  }
 		  catch(NotBoundException e)
 		  {
@@ -136,8 +134,8 @@ implements IUno{
 	 }
 
 	@Override
-	public void connectReply(String name) throws RemoteException {
-		state.addUser(name);
+	public void connectReply(String dom,String name) throws RemoteException {
+		state.addUser(name,dom);
 		//System.out.print(playersnames);
 		System.out.println("Utente entrato in stanza: "+name);
 		try
@@ -145,7 +143,7 @@ implements IUno{
 			for (int i=0; i<state.getNumberOfUsers(); i++){
 				if (i != myId){
 					IUno tempServer = 
-							(IUno) Naming.lookup("rmi://localhost/"+state.getUsername(i));
+							(IUno) Naming.lookup("rmi://"+state.getDomain(i)+"/"+state.getUsername(i));
 					tempServer.refreshState(state);
 				}
 			}

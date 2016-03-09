@@ -82,6 +82,7 @@ public class MainMenu extends BasicGameState {
         private class PlayListener implements ComponentListener {
             public void componentActivated(AbstractComponent ac) {
                 System.out.println("Play");
+                
             }
         }
         

@@ -11,13 +11,16 @@ public class GameState implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	private ArrayList<String> users;
+	private ArrayList<String> domains;
 	private ArrayList<Card> deck;
 	private ArrayList<Card> discarded;
 	private boolean clockwiseSense;
 	
-	public GameState(String name){
+	public GameState(String name, String domain){
 		users = new ArrayList<String>();
+		domains = new ArrayList<String>();
 		users.add(name);
+		domains.add(domain);
 		deck = new ArrayList<Card>();
 		discarded = new ArrayList<Card>();
 		clockwiseSense = true;
@@ -27,16 +30,22 @@ public class GameState implements Serializable{
 		return users.get(id);
 	}
 	
+	public String getDomain(int id){
+		return domains.get(id);
+	}
+	
 	public int getNumberOfUsers(){
 		return users.size();
 	}
-	public int addUser(String name){
+	public int addUser(String name, String domain){
 		users.add(name);
+		domains.add(domain);
 		return users.size();
 	}
 	
 	public void removeUser(int id){
 		users.remove(id);
+		domains.remove(id);
 	}
 	
 	public int getUserId(String name){
