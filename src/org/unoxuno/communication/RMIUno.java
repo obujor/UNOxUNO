@@ -19,6 +19,7 @@ implements IUno{
 	GameState state;
 	boolean token = false;
 	Registry localRegistry;
+	RegistryContainer players_registries;
 
 	private class Task extends TimerTask{
 
@@ -31,16 +32,16 @@ implements IUno{
 				int nextId = state.getNextId(myId);
 				if (nextId != myId){
 					String nextname = state.getUsername(nextId);
-					//String nextdomain = state.getDomain(nextId);
 					try
 					{
 						IUno tempServer = 
-								(IUno) state.getRegistry(nextname).lookup(nextname);
+								(IUno) players_registries.getRegistry(nextname).lookup(nextname);
 						tempServer.ping(nickname);
 					}
 					catch(ConnectException e){
 						System.out.println("Successivo non trovato, rimozione");
 						state.removeUser(nextId);
+						players_registries.removeRegistry(nextname);
 						checknext = true;
 						changed = true;
 						if (nextId < myId){
@@ -60,12 +61,12 @@ implements IUno{
 			if (changed){
 				try
 				{
-					Map<String,Registry> reg = state.getAllRegistries();
+					Map<String,Registry> reg = players_registries.getAllRegistries();
 					for (String regname : state.getUsernames()){
 						if (regname != nickname){
 							IUno tempServer = 
 									(IUno) reg.get(regname).lookup(regname);
-							tempServer.refreshState(state);
+							tempServer.refreshState(state,players_registries);
 						}
 					}
 				}
@@ -87,9 +88,9 @@ implements IUno{
 		this.myId = 0;
 		localRegistry = LocateRegistry.createRegistry(port);
 		localRegistry.rebind(name, this);
-		state = new GameState(name, localRegistry);
+		state = new GameState(name);
+		players_registries = new RegistryContainer(name,localRegistry);
 		System.out.println("Binding eseguito su "+name+" in porta "+port);
-		//Naming.rebind("//"+dom+"/"+name,this);
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new Task(), 2000, 2000);
 
@@ -124,17 +125,17 @@ implements IUno{
 	@Override
 	public void connectReply(String name, Registry r) throws RemoteException {
 		System.out.println("Richiesta ricevuta da "+name);
-		state.addUser(name,r);
-		//System.out.print(playersnames);
+		state.addUser(name);
+		players_registries.addRegistry(name, r);
 		System.out.println("Utente entrato in stanza: "+name);
 		try
 		{
-			Map<String,Registry> reg = state.getAllRegistries();
+			Map<String,Registry> reg = players_registries.getAllRegistries();
 			for (String regname : state.getUsernames()){
 				if (regname != nickname){
 					IUno tempServer = 
 							(IUno) reg.get(regname).lookup(regname);
-					tempServer.refreshState(state);
+					tempServer.refreshState(state,players_registries);
 				}
 			}
 		}
@@ -149,16 +150,41 @@ implements IUno{
 	}
 
 	@Override
-	public void refreshState(GameState s) throws RemoteException {
+	public void refreshState(GameState s, RegistryContainer r) throws RemoteException {
 		state = s;
-		System.out.println("Aggiornato stato");
+		players_registries = r;
+		//System.out.println("Aggiornato stato");
 		myId = state.getUserId(nickname);
 	}
 
 	@Override
 	public void ping(String name) throws RemoteException {
 		System.out.println("Pingato da "+name);
-
+		Card pescata = state.getCard();
+		System.out.println("Pescata carta di colore "+pescata.getColor()+" ed effetto "+pescata.getEffect());
+		refreshAllStates();
+	}
+	
+	private void refreshAllStates(){
+		try
+		{
+			Map<String,Registry> reg = players_registries.getAllRegistries();
+			for (String regname : state.getUsernames()){
+				if (regname != nickname){
+					IUno tempServer = 
+							(IUno) reg.get(regname).lookup(regname);
+					tempServer.refreshState(state,players_registries);
+				}
+			}
+		}
+		catch(NotBoundException e)
+		{
+			e.printStackTrace( );
+		}
+		catch(RemoteException e)
+		{
+			e.printStackTrace( );
+		}
 	}
 
 }

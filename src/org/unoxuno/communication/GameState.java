@@ -1,10 +1,11 @@
 package org.unoxuno.communication;
 
+import java.io.BufferedReader;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
 import java.io.Serializable;
-import java.rmi.registry.Registry;
 import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public class GameState implements Serializable{
 
@@ -17,16 +18,34 @@ public class GameState implements Serializable{
 	private ArrayList<Card> deck;
 	private ArrayList<Card> discarded;
 	private boolean clockwiseSense;
-	private Map<String,Registry> usersdata;
+	
 
-	public GameState(String name, Registry r){
+	public GameState(String name){
+		
+		
 		users = new ArrayList<String>();
-		usersdata = new HashMap<String,Registry>();
 		users.add(name);
-		usersdata.put(name, r);
 		deck = new ArrayList<Card>();
 		discarded = new ArrayList<Card>();
 		clockwiseSense = true;
+		
+		//Init Deck
+		try {
+			BufferedReader br = new BufferedReader(new FileReader("res/cards.txt"));
+			String line;
+			while ((line = br.readLine())!= null){
+				String color = line.split(",")[0];
+				String effect = line.split(",")[1];
+				Card crd = new Card(color,effect);
+				deck.add(crd);
+			}
+			br.close();
+		} catch (FileNotFoundException e) {
+			e.printStackTrace();
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
 	}
 
 	public String getUsername(int id){
@@ -40,15 +59,13 @@ public class GameState implements Serializable{
 	public int getNumberOfUsers(){
 		return users.size();
 	}
-	public int addUser(String name, Registry r){
+	public int addUser(String name){
 		users.add(name);
-		usersdata.put(name, r);
 		return users.size();
 	}
 
 	public void removeUser(int id){
-		String name = users.remove(id);
-		usersdata.remove(name);
+		users.remove(id);
 	}
 
 	public int getUserId(String name){
@@ -64,13 +81,7 @@ public class GameState implements Serializable{
 		return (id + 1) % users.size();
 	}
 
-	public Registry getRegistry(String name){
-		return usersdata.get(name);
-	}
-
-	public Map<String,Registry> getAllRegistries(){
-		return usersdata;
-	}
+	
 
 	public ArrayList<Card> getDeck(){
 		return deck;
@@ -86,8 +97,13 @@ public class GameState implements Serializable{
 
 	public Card getCard(){
 		int cardId = (int) (Math.random() * deck.size());
-		Card c = deck.get(cardId);
-		deck.remove(cardId);
+		Card c;
+		try{
+			c = deck.remove(cardId);
+		}
+		catch (IndexOutOfBoundsException e){
+			c = new Card("FINITE","FINITE");
+		}
 		return c;
 	}
 
@@ -103,6 +119,4 @@ public class GameState implements Serializable{
 		deck.addAll(discarded);
 		discarded.clear();
 	}
-
-
 }
