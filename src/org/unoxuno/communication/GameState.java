@@ -1,6 +1,7 @@
 package org.unoxuno.communication;
 
 import java.io.Serializable;
+import java.rmi.registry.Registry;
 import java.util.ArrayList;
 
 public class GameState implements Serializable{
@@ -11,13 +12,22 @@ public class GameState implements Serializable{
 	private static final long serialVersionUID = 1L;
 	
 	private ArrayList<String> users;
+	//private ArrayList<String> domains;
+	//private ArrayList<Integer> ports;
+	private ArrayList<Registry>  registries;
 	private ArrayList<Card> deck;
 	private ArrayList<Card> discarded;
 	private boolean clockwiseSense;
 	
-	public GameState(String name){
+	public GameState(String name, Registry r){
 		users = new ArrayList<String>();
+		registries = new ArrayList<Registry>();
+		//domains = new ArrayList<String>();
+		//ports = new ArrayList<Integer>();
 		users.add(name);
+		registries.add(r);
+		//domains.add(dom);
+		//ports.add(port);
 		deck = new ArrayList<Card>();
 		discarded = new ArrayList<Card>();
 		clockwiseSense = true;
@@ -30,13 +40,15 @@ public class GameState implements Serializable{
 	public int getNumberOfUsers(){
 		return users.size();
 	}
-	public int addUser(String name){
+	public int addUser(String name, Registry r){
 		users.add(name);
+		registries.add(r);
 		return users.size();
 	}
 	
 	public void removeUser(int id){
 		users.remove(id);
+		registries.remove(id);
 	}
 	
 	public int getUserId(String name){
@@ -50,6 +62,18 @@ public class GameState implements Serializable{
 	
 	public int getNextId(int id){
 			return (id + 1) % users.size();
+	}
+	
+	/*public String getDomain(int id){
+		return domains.get(id);
+	}
+	
+	public int getPort(int id){
+		return ports.get(id);
+	}*/
+	
+	public Registry getRegistry(int id){
+		return registries.get(id);
 	}
 	
 	public ArrayList<Card> getDeck(){

@@ -94,10 +94,10 @@ implements IUno{
 	*/
 	 public RMIUno(String name,int port)throws RemoteException{
 		 this.nickname = name;
-		 state = new GameState(name);
 		 this.myId = 0;
 		 localRegistry = LocateRegistry.createRegistry(port);
 		 localRegistry.rebind(name, this);
+		 state = new GameState(name, localRegistry);
 		 System.out.println("Binding eseguito su "+name+" in porta "+port);
 			 //Naming.rebind("//"+dom+"/"+name,this);
 		 //Timer t = new Timer();
@@ -119,7 +119,7 @@ implements IUno{
 			 System.out.println("Tentativo di connessione da parte di "+myname+" su "+servername+" con porta "+serverport+" all'indirizzo "+serverdom);
 			 Registry tempRegistry = LocateRegistry.getRegistry(serverdom, serverport);
 			 IUno tempServer = (IUno) tempRegistry.lookup(servername);
-		   tempServer.connectReply(myname);
+		     tempServer.connectReply(myname,localRegistry);
 		  }
 		  catch(NotBoundException e)
 		  {
@@ -132,17 +132,18 @@ implements IUno{
 		 }
 
 	@Override
-	public void connectReply(String name) throws RemoteException {
+	public void connectReply(String name, Registry r) throws RemoteException {
 		System.out.println("Richiesta ricevuta da "+name);
-		state.addUser(name);
+		state.addUser(name,r);
 		//System.out.print(playersnames);
 		System.out.println("Utente entrato in stanza: "+name);
-		/*try
+		try
 		  {
 			for (int i=0; i<state.getNumberOfUsers(); i++){
 				if (i != myId){
+					Registry tempRegistry = state.getRegistry(i);
 					IUno tempServer = 
-							(IUno) Naming.lookup("rmi://"+state.getDomain(i)+"/"+state.getUsername(i));
+							(IUno) tempRegistry.lookup(state.getUsername(i));
 					tempServer.refreshState(state);
 				}
 			}
@@ -155,16 +156,12 @@ implements IUno{
 		  {
 		   e.printStackTrace( );
 		  }
-		  catch(MalformedURLException e)
-		  {
-		   e.printStackTrace( );
-		  }*/
 	}
 
 	@Override
 	public void refreshState(GameState s) throws RemoteException {
 		state = s;
-		//System.out.print(playersnames);
+		System.out.println("Aggiornato stato");
 		myId = state.getUserId(nickname);
 	}
 
