@@ -1,0 +1,13 @@
+blu,0
+blu,1
+blu,2
+blu,3
+blu,4
+blu,5
+blu,6
+blu,7
+blu,8
+blu,9
+blu,cambio
+blu,piu2
+blu,salta

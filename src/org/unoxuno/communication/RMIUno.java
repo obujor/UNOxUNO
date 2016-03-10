@@ -58,27 +58,8 @@ implements IUno{
 					}
 				}
 			}
-			if (changed){
-				try
-				{
-					Map<String,Registry> reg = players_registries.getAllRegistries();
-					for (String regname : state.getUsernames()){
-						if (regname != nickname){
-							IUno tempServer = 
-									(IUno) reg.get(regname).lookup(regname);
-							tempServer.refreshState(state,players_registries);
-						}
-					}
-				}
-				catch(NotBoundException e)
-				{
-					e.printStackTrace( );
-				}
-				catch(RemoteException e)
-				{
-					e.printStackTrace( );
-				}
-			}
+			if (changed)
+				refreshAllStates();
 		}
 
 	}
@@ -128,25 +109,7 @@ implements IUno{
 		state.addUser(name);
 		players_registries.addRegistry(name, r);
 		System.out.println("Utente entrato in stanza: "+name);
-		try
-		{
-			Map<String,Registry> reg = players_registries.getAllRegistries();
-			for (String regname : state.getUsernames()){
-				if (regname != nickname){
-					IUno tempServer = 
-							(IUno) reg.get(regname).lookup(regname);
-					tempServer.refreshState(state,players_registries);
-				}
-			}
-		}
-		catch(NotBoundException e)
-		{
-			e.printStackTrace( );
-		}
-		catch(RemoteException e)
-		{
-			e.printStackTrace( );
-		}
+		refreshAllStates();
 	}
 
 	@Override
