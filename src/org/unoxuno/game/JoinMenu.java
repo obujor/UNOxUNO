@@ -38,6 +38,25 @@ public class JoinMenu extends MainMenu {
         roomIp.setText("Room IP");
         room = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+110, 200, 25);
         room.setText("Room name");
+        setInputAccepting(false);
+    }
+    
+    @Override
+    public void enter(GameContainer gc, StateBasedGame sbg) {
+        super.enter(gc, sbg);
+        setInputAccepting(true);
+    }
+    
+    @Override
+    public void leave(GameContainer gc, StateBasedGame sbg) {
+        super.leave(gc, sbg);
+        setInputAccepting(false);
+    }
+    
+    public void setInputAccepting(boolean state) {
+        nickname.setAcceptingInput(state);
+        roomIp.setAcceptingInput(state);
+        room.setAcceptingInput(state);
     }
     
     @Override
@@ -51,7 +70,7 @@ public class JoinMenu extends MainMenu {
     
     @Override
     public void addButtons() {
-        super.addButton("Start!", new EnterState(MainClass.play),3);
+        super.addButton("Join", new EnterState(MainClass.play),3);
         super.addButton("Back", new EnterState(MainClass.play),4);
     }  
 }
