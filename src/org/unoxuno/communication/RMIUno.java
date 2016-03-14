@@ -85,7 +85,7 @@ implements IUno{
 
 	}
 
-	private void connectSend(String myname, int serverport, String servername, String serverdom){
+	public void connectSend(String myname, int serverport, String servername, String serverdom){
 		try
 		{
 			System.out.println("Tentativo di connessione da parte di "+myname+" su "+servername+" con porta "+serverport+" all'indirizzo "+serverdom);
@@ -149,5 +149,9 @@ implements IUno{
 			e.printStackTrace( );
 		}
 	}
+        
+        public GameState getState() {
+            return state;
+        }
 
 }

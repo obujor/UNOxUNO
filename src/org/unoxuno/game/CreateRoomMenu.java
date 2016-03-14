@@ -75,9 +75,8 @@ public class CreateRoomMenu extends MainMenu {
     
     public class CreateRoom implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
-            System.out.println(nickname.getText());
             try {
-                RMIUno player = new RMIUno(nickname.getText(), Integer.parseInt(port.getText()));
+                MainClass.player = new RMIUno(nickname.getText(), Integer.parseInt(port.getText()));
             } catch (RemoteException ex) {
                 Logger.getLogger(CreateRoomMenu.class.getName()).log(Level.SEVERE, null, ex);
             }

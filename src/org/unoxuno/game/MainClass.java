@@ -10,6 +10,7 @@ import org.newdawn.slick.state.StateBasedGame;
 import org.newdawn.slick.state.transition.EmptyTransition;
 import org.newdawn.slick.state.transition.FadeInTransition;
 import org.newdawn.slick.state.transition.FadeOutTransition;
+import org.unoxuno.communication.RMIUno;
 
 public class MainClass extends StateBasedGame
 {
@@ -24,6 +25,10 @@ public class MainClass extends StateBasedGame
         public static final int joinRoom = 3;
         public static final int createRoom = 4;
         public static final int roomViewer = 5;
+        
+        public static int prevStateID = 0;
+        
+        public static RMIUno player;
 	
 	public MainClass(String gamename)
 	{
@@ -42,6 +47,7 @@ public class MainClass extends StateBasedGame
         
         @Override
         public void enterState(int state) {
+            this.prevStateID = this.getCurrentStateID();
             this.enterState(state, new FadeOutTransition(), new FadeInTransition());
         }
 

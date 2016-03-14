@@ -49,7 +49,7 @@ public class MainMenu extends BasicGameState {
                 Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
             }
             txtFont = new TrueTypeFont(trueTypeFont.deriveFont(30f), true);
-            txtFontSmall = new TrueTypeFont(trueTypeFont.deriveFont(20f), true);
+            txtFontSmall = new TrueTypeFont(trueTypeFont.deriveFont(18f), true);
             initImages();
             addButtons();
 	}
@@ -134,6 +134,12 @@ public class MainMenu extends BasicGameState {
             }
             public void componentActivated(AbstractComponent ac) {
                 sbg.enterState(state);
+            }
+        }
+        
+        public class GoBack implements ComponentListener {
+            public void componentActivated(AbstractComponent ac) {
+                sbg.enterState(MainClass.prevStateID);
             }
         }
         
