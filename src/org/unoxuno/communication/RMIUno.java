@@ -22,7 +22,7 @@ implements IUno{
 	Registry localRegistry;
 	RegistryContainer players_registries;
 
-	private class Task extends TimerTask{
+	private class PingTask extends TimerTask{
 
 		@Override
 		public void run() {
@@ -61,6 +61,7 @@ implements IUno{
 			}
 			if (changed)
 				refreshAllStates();
+
 		}
 
 	}
@@ -74,7 +75,7 @@ implements IUno{
 		players_registries = new RegistryContainer(name,localRegistry);
 		System.out.println("Binding eseguito su "+name+" in porta "+port);
 		Timer t = new Timer();
-		t.scheduleAtFixedRate(new Task(), 2000, 2000);
+		t.scheduleAtFixedRate(new PingTask(), 5000, 5000);
 
 	}
 
@@ -123,7 +124,7 @@ implements IUno{
 
 	@Override
 	public void ping(String name) throws RemoteException {
-		System.out.println("Pingato da "+name);
+		//System.out.println("Pingato da "+name);
 	}
 
 	private void refreshAllStates(){
@@ -151,14 +152,23 @@ implements IUno{
 	public GameState getState() {
 		return state;
 	}
-	
+
 	public void setReady(boolean ready){
 		state.setUserReady(nickname, ready);
 		refreshAllStates();
+		System.out.println("Utente prontissimo!");
 	}
-	
+
 	public ArrayList<Card> getMyCards(){
 		return state.getHand(nickname);
+	}
+	
+	public void startGame(){
+		if (state.isGameStarted()){
+			//Do something
+		}
+		else
+			System.out.println("Errore: il gioco non è iniziato per tutti!");
 	}
 
 }

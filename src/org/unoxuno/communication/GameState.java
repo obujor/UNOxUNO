@@ -16,10 +16,11 @@ public class GameState implements Serializable{
 	private ArrayList<String> users;
 	private ArrayList<Card> deck;
 	private ArrayList<Card> discarded;
-	private boolean clockwiseSense;
+	private boolean clockwise_sense;
 	private Map<String,ArrayList<Card>> hand;
 	private Map<String,Boolean> user_ready;
 	private int user_id_turn;
+	private boolean game_started;
 
 	public GameState(String name){
 
@@ -27,14 +28,18 @@ public class GameState implements Serializable{
 		users.add(name);
 		deck = new ArrayList<Card>();
 		discarded = new ArrayList<Card>();
-		clockwiseSense = true;
+		clockwise_sense = true;
 		hand = new HashMap<String,ArrayList<Card>>();
 		user_ready = new HashMap<String,Boolean>();
 		user_id_turn = 0;
+		game_started = false;
+
+		hand.put(name, new ArrayList<Card>());
+		user_ready.put(name, false);
 
 		//Init Deck
 		try {
-			BufferedReader br = new BufferedReader(new FileReader("res/cards.txt"));
+			BufferedReader br = new BufferedReader(new FileReader("res/cardsreal.txt"));
 			String line;
 			while ((line = br.readLine())!= null){
 				String color = line.split(",")[0];
@@ -50,7 +55,7 @@ public class GameState implements Serializable{
 		}
 
 	}
-	
+
 	private void initGame(){
 		for (String username: users){
 			for (int i=0; i<7; i++){
@@ -58,8 +63,17 @@ public class GameState implements Serializable{
 			}
 		}
 		user_id_turn = (int) (Math.random() * users.size());
+		game_started = true;
 	}
-	
+
+	/**
+	 * Controlla se il gioco è iniziato.
+	 * @return True se il gioco è iniziato, false se si è ancora nella sala di attesa.
+	 */
+	public boolean isGameStarted(){
+		return game_started;
+	}
+
 	/**
 	 * Controlla se il turno attuale è quello che corrisponde all'utente che ha
 	 * id uguale a quello passato come parametro.
@@ -68,6 +82,18 @@ public class GameState implements Serializable{
 	 */
 	public boolean isMyTurn(int id){
 		return (id == user_id_turn);
+	}
+
+	/**
+	 * Passa il turno al giocatore successivo
+	 */
+	public void passTurn(){
+		if (clockwise_sense)
+			user_id_turn = (user_id_turn + 1) % users.size();
+
+		else
+			user_id_turn = (user_id_turn - 1) % users.size();
+
 	}
 
 	/**
@@ -155,14 +181,14 @@ public class GameState implements Serializable{
 	 * @return Ritorna true se il senso è orario, false altrimenti
 	 */
 	public boolean getSense(){
-		return clockwiseSense;
+		return clockwise_sense;
 	}
 
 	/**
 	 * Inverte il senso attuale di gioco (orario/antiorario)
 	 */
 	public void reverseSense(){
-		clockwiseSense = !clockwiseSense;
+		clockwise_sense = !clockwise_sense;
 	}
 
 	/**
@@ -203,7 +229,7 @@ public class GameState implements Serializable{
 		hand.put(username,user_hand);
 		discarded.add(c);
 	}
-	
+
 	/**
 	 * Restituisce la mano dell'utente
 	 * @param username Nome dell'utente di cui si vuole sapere la mano
@@ -230,7 +256,9 @@ public class GameState implements Serializable{
 	public boolean setUserReady(String username, boolean ready){
 		user_ready.put(username, ready);
 		boolean allReady = true;
-		for (String u : users){
+		if (users.size()<3)
+			allReady = false;
+		else for (String u : users){
 			if (!user_ready.get(u)){
 				allReady = false;
 				break;
