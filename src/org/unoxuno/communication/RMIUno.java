@@ -6,6 +6,7 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -123,11 +124,8 @@ implements IUno{
 	@Override
 	public void ping(String name) throws RemoteException {
 		System.out.println("Pingato da "+name);
-		Card pescata = state.getCard();
-		System.out.println("Pescata carta di colore "+pescata.getColor()+" ed effetto "+pescata.getEffect());
-		refreshAllStates();
 	}
-	
+
 	private void refreshAllStates(){
 		try
 		{
@@ -149,9 +147,18 @@ implements IUno{
 			e.printStackTrace( );
 		}
 	}
-        
-        public GameState getState() {
-            return state;
-        }
+
+	public GameState getState() {
+		return state;
+	}
+	
+	public void setReady(boolean ready){
+		state.setUserReady(nickname, ready);
+		refreshAllStates();
+	}
+	
+	public ArrayList<Card> getMyCards(){
+		return state.getHand(nickname);
+	}
 
 }
