@@ -171,4 +171,10 @@ implements IUno{
 			System.out.println("Errore: il gioco non è iniziato per tutti!");
 	}
 
+	public boolean discardable(Card c){
+		Card last_discarded = state.getLastDiscardedCard();
+		return c.compatibleWith(last_discarded);
+	}
+	
+	
 }

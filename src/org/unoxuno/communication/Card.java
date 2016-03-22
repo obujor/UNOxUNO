@@ -28,5 +28,13 @@ public class Card implements Serializable{
 	public String getUri(){
 		return (this.color+"_"+this.effect+".png");
 	}
+	
+	public boolean compatibleWith(Card otherCard){
+		boolean cmp = false;
+		if (this.getColor().equals(otherCard.getColor()) 
+			|| this.getEffect().equals(otherCard.getEffect()))
+			cmp = true;
+		return cmp;
+	}
 
 }

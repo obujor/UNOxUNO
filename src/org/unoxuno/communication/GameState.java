@@ -57,6 +57,8 @@ public class GameState implements Serializable{
 	}
 
 	private void initGame(){
+		Card first_discarded_card = getCard(users.get(0));
+		discard(first_discarded_card,users.get(0));
 		for (String username: users){
 			for (int i=0; i<7; i++){
 				getCard(username);
@@ -83,16 +85,27 @@ public class GameState implements Serializable{
 	public boolean isMyTurn(int id){
 		return (id == user_id_turn);
 	}
+	
+	/**
+	 * Restituisce l'id del giocatore che giocherà il prossimo turno
+	 * @return Id del prossimo giocatore in gioco
+	 */
+	public int nextTurnPlayerId(){
+		int next_id;
+		if (clockwise_sense)
+			next_id = (user_id_turn + 1) % users.size();
+
+		else
+			next_id = (user_id_turn - 1) % users.size();
+		return next_id;
+
+	}
 
 	/**
 	 * Passa il turno al giocatore successivo
 	 */
 	public void passTurn(){
-		if (clockwise_sense)
-			user_id_turn = (user_id_turn + 1) % users.size();
-
-		else
-			user_id_turn = (user_id_turn - 1) % users.size();
+		user_id_turn = nextTurnPlayerId();
 
 	}
 
@@ -243,8 +256,10 @@ public class GameState implements Serializable{
 	 * Sposta tutte le carte scartate nel mazzo (e le rimescola)
 	 */
 	public void refillDeck(){
+		Card lastCard = discarded.remove(discarded.size()-1);
 		deck.addAll(discarded);
 		discarded.clear();
+		discarded.add(lastCard);
 	}
 
 	/**
@@ -276,5 +291,14 @@ public class GameState implements Serializable{
 	 */
 	public boolean getUserReady(String username){
 		return user_ready.get(username);
+	}
+	
+	/**
+	 * Restituisce l'ultima carta scartata, ovvero quella su cui ci si deve
+	 * basare per la prossima mossa.
+	 * @return L'ultima carta scartata.
+	 */
+	public Card getLastDiscardedCard(){
+		return discarded.get(discarded.size()-1);
 	}
 }
