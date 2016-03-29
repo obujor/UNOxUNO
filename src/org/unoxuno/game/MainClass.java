@@ -25,6 +25,7 @@ public class MainClass extends StateBasedGame
         public static final int joinRoom = 3;
         public static final int createRoom = 4;
         public static final int roomViewer = 5;
+        public static final int gameBoard = 6;
         
         public static int prevStateID = 0;
         
@@ -42,6 +43,7 @@ public class MainClass extends StateBasedGame
             this.addState(new JoinMenu(joinRoom));
             this.addState(new CreateRoomMenu(createRoom));
             this.addState(new RoomViewer(roomViewer));
+            this.addState(new GameBoard(gameBoard));
             this.enterState(menu, new EmptyTransition(), new EmptyTransition()); 
 	}
         

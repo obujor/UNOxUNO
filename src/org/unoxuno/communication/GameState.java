@@ -56,7 +56,7 @@ public class GameState implements Serializable{
 
 	}
 
-	private void initGame(){
+	public void initGame(){
 		Card first_discarded_card = getCard(users.get(0));
 		discard(first_discarded_card,users.get(0));
 		for (String username: users){
@@ -266,22 +266,9 @@ public class GameState implements Serializable{
 	 * Imposta lo stato dell'utente nella stanza di attesa
 	 * @param username Nome dell'utente
 	 * @param ready Nuovo stato
-	 * @return Restituisce true se tutti gli utenti sono pronti per iniziare il gioco
 	 */
-	public boolean setUserReady(String username, boolean ready){
+	public void setUserReady(String username, boolean ready){
 		user_ready.put(username, ready);
-		boolean allReady = true;
-		if (users.size()<3)
-			allReady = false;
-		else for (String u : users){
-			if (!user_ready.get(u)){
-				allReady = false;
-				break;
-			}
-		}
-		if (allReady)
-			this.initGame();
-		return allReady;
 	}
 
 	/**

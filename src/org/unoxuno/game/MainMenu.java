@@ -148,5 +148,15 @@ public class MainMenu extends BasicGameState {
                 sbg.enterState(MainClass.menu);
             }
         }
+        
+        public class GameStart implements ComponentListener {
+            boolean activated = false;
+            public void componentActivated(AbstractComponent ac) {}
+            public void activate() {
+                if (!activated)
+                    sbg.enterState(MainClass.gameBoard);
+                activated = true;    
+            }
+        }
 
 }

@@ -9,6 +9,7 @@ import java.util.ArrayList;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
+import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
 import org.newdawn.slick.gui.AbstractComponent;
 import org.newdawn.slick.gui.ComponentListener;
@@ -21,7 +22,7 @@ import org.newdawn.slick.state.StateBasedGame;
 public class RoomViewer extends MainMenu {
 	String title = "Game room";
 	int textLeft, titleHeight;
-
+        Image readyTick;
 	ArrayList<String> players = new ArrayList<String>();
 
 	public RoomViewer(int s) {
@@ -33,6 +34,7 @@ public class RoomViewer extends MainMenu {
 		super.init(gc, sbg);
 		titleHeight = txtFont.getHeight(title);
 		textLeft = centerX - (txtFont.getWidth(title)/2);
+                readyTick = new Image("res/images/ok_tick.png").getScaledCopy(20, 20);
 	}
 
 	@Override
@@ -47,12 +49,10 @@ public class RoomViewer extends MainMenu {
 			g.drawRect(centerX-100, initTop+55+i*20, 200, 20);
 			txtFontSmall.drawString(centerX-90, initTop+55+i*20, Integer.toString(i+1), txtColor);
 			txtFontSmall.drawString(centerX-60, initTop+55+i*20, players.get(i), txtColor);
+                        if (MainClass.player.getState().getUserReady(players.get(i)))
+                            g.drawImage(readyTick, centerX+80, initTop+55+i*20);
 		}
 		g.setColor(prevColor);
-		if (MainClass.player.getState().isGameStarted()){
-			//Qua inizia il gioco (cambiare schermata?)
-			System.out.println("Gioco iniziato!");
-		}
 	}
 
 	@Override
@@ -65,7 +65,6 @@ public class RoomViewer extends MainMenu {
 	public class Start implements ComponentListener {
 		public void componentActivated(AbstractComponent ac) {
 			MainClass.player.setReady(true);
-			//sbg.enterState(MainClass.menu);
 		}
 	}
 

@@ -44,11 +44,11 @@ public class JoinMenu extends MainMenu {
         port = new TextField(gc, txtFontSmall, centerX+50, initTop+titleHeight+30, 50, 25);
         port.setText("4600");
         roomIp = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+60, 150, 25);
-        roomIp.setText("Room IP");
+        roomIp.setText("localhost");
         serverPort = new TextField(gc, txtFontSmall, centerX+50, initTop+titleHeight+60, 50, 25);
         serverPort.setText("4500");
         room = new TextField(gc, txtFontSmall, centerX-75, initTop+titleHeight+90, 150, 25);
-        room.setText("Room name");
+        room.setText("Nickname");
         setInputAccepting(false);
     }
     
@@ -93,6 +93,7 @@ public class JoinMenu extends MainMenu {
         public void componentActivated(AbstractComponent ac) {
             try {
                 MainClass.player = new RMIUno(nickname.getText(), Integer.parseInt(port.getText()));
+                MainClass.player.setGameStartListener(new GameStart());
                 MainClass.player.connectSend(nickname.getText(), Integer.parseInt(serverPort.getText()), room.getText(), roomIp.getText());
                 sbg.enterState(MainClass.roomViewer);
             } catch (RemoteException ex) {

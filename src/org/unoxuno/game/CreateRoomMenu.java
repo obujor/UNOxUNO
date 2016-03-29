@@ -77,6 +77,7 @@ public class CreateRoomMenu extends MainMenu {
         public void componentActivated(AbstractComponent ac) {
             try {
                 MainClass.player = new RMIUno(nickname.getText(), Integer.parseInt(port.getText()));
+                MainClass.player.setGameStartListener(new GameStart());
             } catch (RemoteException ex) {
                 Logger.getLogger(CreateRoomMenu.class.getName()).log(Level.SEVERE, null, ex);
             }

@@ -10,6 +10,10 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.newdawn.slick.gui.AbstractComponent;
+import org.newdawn.slick.gui.ComponentListener;
+import org.unoxuno.game.MainMenu;
+import org.unoxuno.game.MainMenu.GameStart;
 
 public class RMIUno extends UnicastRemoteObject 
 implements IUno{
@@ -21,6 +25,7 @@ implements IUno{
 	boolean token = false;
 	Registry localRegistry;
 	RegistryContainer players_registries;
+        GameStart gameStartListener;
 
 	private class PingTask extends TimerTask{
 
@@ -120,6 +125,7 @@ implements IUno{
 		players_registries = r;
 		//System.out.println("Aggiornato stato");
 		myId = state.getUserId(nickname);
+                startGame();
 	}
 
 	@Override
@@ -155,9 +161,29 @@ implements IUno{
 
 	public void setReady(boolean ready){
 		state.setUserReady(nickname, ready);
+                
+                if (arePlayersReady())
+                    startGame();
+                
 		refreshAllStates();
 		System.out.println("Utente prontissimo!");
 	}
+        
+        private boolean arePlayersReady() {
+                boolean allReady = true;
+		if (state.getNumberOfUsers()<3)
+			allReady = false;
+		else for (String u : state.getUsernames()){
+			if (!state.getUserReady(u)){
+				allReady = false;
+				break;
+			}
+		}
+		if (allReady) 
+			state.initGame();
+                
+                return allReady;
+        }
 
 	public ArrayList<Card> getMyCards(){
 		return state.getHand(nickname);
@@ -165,7 +191,7 @@ implements IUno{
 	
 	public void startGame(){
 		if (state.isGameStarted()){
-			//Do something
+                        gameStartListener.activate();
 		}
 		else
 			System.out.println("Errore: il gioco non è iniziato per tutti!");
@@ -175,6 +201,8 @@ implements IUno{
 		Card last_discarded = state.getLastDiscardedCard();
 		return c.compatibleWith(last_discarded);
 	}
-	
-	
+        
+        public void setGameStartListener(GameStart lst) {
+            gameStartListener = lst;
+        }
 }
