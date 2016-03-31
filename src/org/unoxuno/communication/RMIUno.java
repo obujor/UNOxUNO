@@ -23,7 +23,7 @@ implements IUno{
 	boolean token = false;
 	Registry localRegistry;
 	RegistryContainer players_registries;
-        GameStart gameStartListener;
+	GameStart gameStartListener;
 
 	private class PingTask extends TimerTask{
 
@@ -123,7 +123,7 @@ implements IUno{
 		players_registries = r;
 		//System.out.println("Aggiornato stato");
 		myId = state.getUserId(nickname);
-                startGame();
+		startGame();
 	}
 
 	@Override
@@ -159,16 +159,16 @@ implements IUno{
 
 	public void setReady(boolean ready){
 		state.setUserReady(nickname, ready);
-                
-                if (arePlayersReady())
-                    startGame();
-                
+
+		if (arePlayersReady())
+			startGame();
+
 		refreshAllStates();
 		System.out.println("Utente prontissimo!");
 	}
-        
-        private boolean arePlayersReady() {
-                boolean allReady = true;
+
+	private boolean arePlayersReady() {
+		boolean allReady = true;
 		if (state.getNumberOfUsers()< GameNumbers.minimimum_users)
 			allReady = false;
 		else for (String u : state.getUsernames()){
@@ -179,17 +179,17 @@ implements IUno{
 		}
 		if (allReady) 
 			state.initGame();
-                
-                return allReady;
-        }
+
+		return allReady;
+	}
 
 	public ArrayList<Card> getMyCards(){
 		return state.getHand(nickname);
 	}
-	
+
 	public void startGame(){
 		if (state.isGameStarted()){
-                        gameStartListener.activate();
+			gameStartListener.activate();
 		}
 		else
 			System.out.println("Errore: il gioco non è iniziato per tutti!");
@@ -199,8 +199,16 @@ implements IUno{
 		Card last_discarded = state.getLastDiscardedCard();
 		return c.compatibleWith(last_discarded);
 	}
-        
-        public void setGameStartListener(GameStart lst) {
-            gameStartListener = lst;
-        }
+
+	public void setGameStartListener(GameStart lst) {
+		gameStartListener = lst;
+	}
+	
+	public Card drawCard(){
+		return state.getCard(nickname);
+	}
+	
+	public void discardCard(Card c){
+		state.discard(c, nickname);
+	}
 }
