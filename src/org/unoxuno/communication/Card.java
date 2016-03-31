@@ -26,7 +26,7 @@ public class Card implements Serializable{
 	}
 	
 	public String getUri(){
-		return (this.color+"_"+this.effect+".png");
+		return ("res/images/"+this.color+"_"+this.effect+".png");
 	}
 	
 	public boolean compatibleWith(Card otherCard){

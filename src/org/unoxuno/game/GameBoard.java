@@ -24,7 +24,7 @@ import org.unoxuno.communication.Card;
  */
 public class GameBoard extends BasicGameState {
     
-    Image gameBG, btnImage, btnOverImage;
+    Image gameBG, btnImage, btnOverImage, unoDeck;
     int state, centerX = MainClass.width/2, 
         centerY = MainClass.height/2, cardW = 73, cardH=109,
         maxWidth = MainClass.width-100;
@@ -53,27 +53,37 @@ public class GameBoard extends BasicGameState {
     }
     
     private void addButtons() {
-        addButton("Add card", new AddCard(), centerX-100, centerY);
-        addButton("Remove card", new DiscardCard(), centerX+100, centerY);
+        addButton("Add card", new AddCard(), centerX-100, centerY-100);
+        addButton("Remove card", new DiscardCard(), centerX+100, centerY-100);
     }
     
     public void initImages() throws SlickException {
-        gameBG = new Image("res/images/game_background.jpg");
+        gameBG = new Image("res/images/game_background.jpg").getScaledCopy(MainClass.width, MainClass.height);
         btnImage = new Image("res/images/btnBg.png");
         btnOverImage = new Image("res/images/btnOver.png");
+        unoDeck = new Image("res/images/uno_deck.png").getScaledCopy(106, 154);
     }
 
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
-        g.drawImage(gameBG.getScaledCopy(MainClass.width, MainClass.height), 0, 0);
+        g.drawImage(gameBG, 0, 0);
+        drawMainCard(g);
         drawMyCards(g);
         for(UnoButton b : buttons) {
             b.render(gc, g);
         }
     }
     
+    private void drawMainCard(Graphics g) throws SlickException {
+        Card c = MainClass.player.getState().getLastDiscardedCard();
+        int w = cardW+cardW/3;
+        int h = cardH+cardH/3;
+        g.drawImage(new Image(c.getUri()).getScaledCopy(w, h), centerX-w/2, centerY-h/2);
+        g.drawImage(unoDeck, centerX-w/2-120, centerY-h/2-10);
+    }
+    
     private void drawMyCards(Graphics g) throws SlickException {
         ArrayList<Card> myCards = MainClass.player.getMyCards();
-        if (myCards.size() == 0) return;
+        if (myCards.isEmpty()) return;
         int margin = maxWidth/myCards.size()-cardW;
         margin = margin > 10 ? 10 : margin;
         int width = margin+cardW;
@@ -89,7 +99,7 @@ public class GameBoard extends BasicGameState {
         String uri = c.getUri();
         if (cardImages.containsKey(uri))
             return cardImages.get(uri);
-        Image img = new Image("res/images/"+uri).getScaledCopy(cardW, cardH);
+        Image img = new Image(uri).getScaledCopy(cardW, cardH);
         cardImages.put(uri, img);
         return img;
     }
@@ -127,6 +137,7 @@ public class GameBoard extends BasicGameState {
         public void componentActivated(AbstractComponent ac) {
             Card c = MainClass.player.drawCard();
             System.out.println("aggiunta carta "+c.getColor()+" "+c.getEffect());
+            System.out.println(MainClass.player.getMyCards().size());
         }
     }
     
