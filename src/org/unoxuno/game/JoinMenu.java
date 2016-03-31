@@ -40,7 +40,7 @@ public class JoinMenu extends MainMenu {
         txtLeftsmall = centerX - (txtFontSmall.getWidth(insertName)/2);
         
         nickname = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+30, 150, 25);
-        nickname.setText("Nickname");
+        nickname.setText("Nickname2");
         port = new TextField(gc, txtFontSmall, centerX+50, initTop+titleHeight+30, 50, 25);
         port.setText("4600");
         roomIp = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+60, 150, 25);
