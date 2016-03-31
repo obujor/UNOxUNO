@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 
+import org.unoxuno.utilities.GameNumbers;
+
 public class GameState implements Serializable{
 
 	private static final long serialVersionUID = 1L;
@@ -60,7 +62,7 @@ public class GameState implements Serializable{
 		Card first_discarded_card = getCard(users.get(0));
 		discard(first_discarded_card,users.get(0));
 		for (String username: users){
-			for (int i=0; i<7; i++){
+			for (int i=0; i< GameNumbers.init_cards; i++){
 				getCard(username);
 			}
 		}

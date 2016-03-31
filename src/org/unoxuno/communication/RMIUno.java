@@ -10,10 +10,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
-import org.newdawn.slick.gui.AbstractComponent;
-import org.newdawn.slick.gui.ComponentListener;
-import org.unoxuno.game.MainMenu;
 import org.unoxuno.game.MainMenu.GameStart;
+import org.unoxuno.utilities.GameNumbers;
 
 public class RMIUno extends UnicastRemoteObject 
 implements IUno{
@@ -171,7 +169,7 @@ implements IUno{
         
         private boolean arePlayersReady() {
                 boolean allReady = true;
-		if (state.getNumberOfUsers()<3)
+		if (state.getNumberOfUsers()< GameNumbers.minimimum_users)
 			allReady = false;
 		else for (String u : state.getUsernames()){
 			if (!state.getUserReady(u)){
