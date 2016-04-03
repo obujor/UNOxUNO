@@ -8,6 +8,8 @@ package org.unoxuno.game;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
@@ -19,6 +21,7 @@ import org.newdawn.slick.gui.ComponentListener;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.unoxuno.communication.Card;
+import org.unoxuno.communication.GameState;
 import static org.unoxuno.game.MainMenu.trueTypeFont;
 
 /**
@@ -38,8 +41,10 @@ public class GameBoard extends BasicGameState {
     private final int[][] playersPosX = new int[][] {{centerX},{10, centerX},{10, centerX,MainClass.width-50}};
     private final int[][] playersPosY = new int[][] {{20}, {centerY, 20},{centerY, 20, centerY}};
     ArrayList<UnoButton> buttons = new ArrayList<UnoButton>();
+    ArrayList<UnoCardButton> cardButtons = new ArrayList<UnoCardButton>();
     TrueTypeFont txtFontSmall, txtCardNr;
     Color playersTxtColor = new Color(0,0,0);
+    Color activePlayerTxtColor = new Color(0,180,0);
     
     public GameBoard(int s) {    
         state = s;
@@ -57,14 +62,15 @@ public class GameBoard extends BasicGameState {
         this.sbg = sbg;
         
         txtFontSmall = new TrueTypeFont(trueTypeFont.deriveFont(20f), true);
-        txtCardNr  = new TrueTypeFont(trueTypeFont.deriveFont(40f), true);
+        txtCardNr  = new TrueTypeFont(trueTypeFont.deriveFont(30f), true);
         initImages();
         addButtons();
     }
     
     private void addButtons() {
-        addButton("Add", new AddCard(), centerX-200, MainClass.height-120);
-        addButton("Remove", new DiscardCard(), centerX, MainClass.height-120);
+        addButton("Pesca", new GetCard(), centerX-300, MainClass.height-120);
+        addButton("Passa", new Pass(), centerX-100, MainClass.height-120);
+        addButton("UNO!", new SayUno(), centerX+100, MainClass.height-120);
     }
     
     public void initImages() throws SlickException {
@@ -78,9 +84,11 @@ public class GameBoard extends BasicGameState {
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
         g.drawImage(gameBG, 0, 0);
         drawMainCard(g);
-        drawMyCards(g);
         drawPlayers(g);
         for(UnoButton b : buttons) {
+            b.render(gc, g);
+        }
+        for(UnoCardButton b : cardButtons) {
             b.render(gc, g);
         }
     }
@@ -93,7 +101,7 @@ public class GameBoard extends BasicGameState {
         g.drawImage(unoDeck, centerX-w/2-120, centerY-h/2-10);
     }
     
-    private void drawMyCards(Graphics g) throws SlickException {
+    private void setUserCards() {
         ArrayList<Card> myCards = MainClass.player.getMyCards();
         if (myCards.isEmpty()) return;
         int margin = maxWidth/myCards.size()-cardW;
@@ -101,20 +109,30 @@ public class GameBoard extends BasicGameState {
         int width = margin+cardW;
         int totalWidth = myCards.size()*width-margin;
         int initWidth = centerX-(totalWidth/2);
-        for(int i=0; i<myCards.size(); i++) {
-            Card c = myCards.get(i);
-            g.drawImage(getImage(c), initWidth+i*width, MainClass.height-cardH/2);
+        cardButtons.clear();
+        int y = MainClass.height-cardH/2;
+        boolean myTurn = MainClass.player.isMyTurn();
+        try {
+            for(int i=0; i<myCards.size(); i++) {
+                Card c = myCards.get(i);
+                addCardButton(getImage(c), new CardClick(c), initWidth+i*width, y, myTurn);
+            }
+        } catch (SlickException ex) {
+            Logger.getLogger(GameBoard.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
     
     private void drawPlayers(Graphics g) throws SlickException {
-        ArrayList<String> users = MainClass.player.getState().getUsernames();
+        GameState state = MainClass.player.getState();
+        ArrayList<String> users = state.getUsernames();
         users.remove(MainClass.player.getNickname());
-        
+        String userTurn = state.getUserActualTurn();
         for(int i=0; i<users.size(); i++) {
-            int cardsNr = MainClass.player.getState().getHand(users.get(i)).size();
-            txtCardNr.drawString(playersPosX[users.size()-1][i]+playersCardW, playersPosY[users.size()-1][i], Integer.toString(cardsNr), playersTxtColor);
-            txtFontSmall.drawString(playersPosX[users.size()-1][i], playersPosY[users.size()-1][i]-20, users.get(i), playersTxtColor);
+            int cardsNr = state.getHand(users.get(i)).size();
+            txtCardNr.drawString(playersPosX[users.size()-1][i]+playersCardW, playersPosY[users.size()-1][i]+10, Integer.toString(cardsNr), playersTxtColor);
+            int txtMidle = this.txtFontSmall.getWidth(users.get(i))/2;
+            Color c = (userTurn.equals(users.get(i))) ? activePlayerTxtColor : playersTxtColor;
+            txtFontSmall.drawString(playersPosX[users.size()-1][i]-txtMidle+playersCardW/2, playersPosY[users.size()-1][i]-20, users.get(i), c);
             g.drawImage(unoCard, playersPosX[users.size()-1][i], playersPosY[users.size()-1][i]);
         }
     }
@@ -136,6 +154,9 @@ public class GameBoard extends BasicGameState {
         super.enter(gc, sbg);
         System.out.println("Gioco iniziato!");
         setButtonsInputAccepted(true);
+        StateChanged lst = new StateChanged();
+        MainClass.player.setStateChangeListener(lst);
+        lst.activate();
     }
     
     @Override
@@ -149,7 +170,7 @@ public class GameBoard extends BasicGameState {
         } 
     }
     
-    protected UnoButton addButton(String text, ComponentListener listener, int x, int y) {           
+    protected UnoButton addButton(String text, ComponentListener listener, int x, int y) {
         UnoButton button = new UnoButton(this.gc, btnImage, x, y, text, listener);
         button.setMouseOverImage(btnOverImage);
         button.setAcceptingInput(false);
@@ -157,18 +178,49 @@ public class GameBoard extends BasicGameState {
         return button;
     }
     
-    public class AddCard implements ComponentListener {
+    protected UnoCardButton addCardButton(Image im, ComponentListener listener, int x, int y, boolean accept) {
+        UnoCardButton button = new UnoCardButton(this.gc, im, x, y, listener);
+        button.setAcceptingInput(accept);
+        cardButtons.add(button);
+        return button;
+    }
+    
+    public class GetCard implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
             Card c = MainClass.player.drawCard();
-            System.out.println("aggiunta carta "+c.getColor()+" "+c.getEffect());
-            System.out.println(MainClass.player.getMyCards().size());
+            System.out.println("Pescata carta "+c.getColor()+" "+c.getEffect());
         }
     }
     
-    public class DiscardCard implements ComponentListener {
+    public class Pass implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
-            MainClass.player.discardCard(MainClass.player.getMyCards().get(0));
-            System.out.println("Rimossa la prima carta");
+            MainClass.player.passTurn();
+        }
+    }
+    
+    public class SayUno implements ComponentListener {
+        public void componentActivated(AbstractComponent ac) {
+            System.out.println("UNO!!!");
+        }
+    }
+    
+    public class CardClick implements ComponentListener {
+        Card card;
+        public CardClick(Card c) {
+            card = c;
+        }
+        public void componentActivated(AbstractComponent ac) {
+            System.out.println("Clicked "+card.getColor()+" "+card.getEffect());
+            if (MainClass.player.discardable(card))
+                MainClass.player.discardCard(card);
+        }
+    }
+    
+    public class StateChanged implements ComponentListener {
+        public void componentActivated(AbstractComponent ac) {}
+        public void activate(){
+            setUserCards();
+            setButtonsInputAccepted(MainClass.player.isMyTurn());
         }
     }
     

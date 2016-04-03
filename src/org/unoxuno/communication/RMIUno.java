@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import org.unoxuno.game.GameBoard.StateChanged;
 import org.unoxuno.game.MainMenu.GameStart;
 import org.unoxuno.utilities.GameNumbers;
 
@@ -24,6 +25,7 @@ implements IUno{
 	Registry localRegistry;
 	RegistryContainer players_registries;
 	GameStart gameStartListener;
+        StateChanged stateChangeListener;
 
 	private class PingTask extends TimerTask{
 
@@ -125,6 +127,8 @@ implements IUno{
 		myId = state.getUserId(nickname);
 		
 		startGame();
+                if (stateChangeListener != null)
+                    stateChangeListener.activate();
 	}
 
 	@Override
@@ -137,7 +141,7 @@ implements IUno{
 		{
 			Map<String,Registry> reg = players_registries.getAllRegistries();
 			for (String regname : state.getUsernames()){
-				if (regname != nickname){
+				if (!regname.equals(nickname)){
 					IUno tempServer = 
 							(IUno) reg.get(regname).lookup(regname);
 					tempServer.refreshState(state,players_registries);
@@ -152,6 +156,9 @@ implements IUno{
 		{
 			e.printStackTrace( );
 		}
+                if (stateChangeListener != null)
+                    stateChangeListener.activate();
+                    
 	}
 
 	public GameState getState() {
@@ -204,6 +211,10 @@ implements IUno{
 	public void setGameStartListener(GameStart lst) {
 		gameStartListener = lst;
 	}
+        
+        public void setStateChangeListener(StateChanged lst) {
+		stateChangeListener = lst;
+	}
 
 	public Card drawCard(){
 		Card c = state.getCard(nickname);
@@ -213,8 +224,14 @@ implements IUno{
 
 	public void discardCard(Card c){
 		state.discard(c, nickname);
+                state.passTurn();
 		refreshAllStates();
 	}
+        
+        public void passTurn() {
+            state.passTurn();
+            refreshAllStates();
+        }
 
 	public String getNickname() {
 		return this.nickname;

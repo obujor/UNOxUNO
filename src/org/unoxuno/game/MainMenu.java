@@ -158,5 +158,4 @@ public class MainMenu extends BasicGameState {
                 activated = true;    
             }
         }
-
 }
