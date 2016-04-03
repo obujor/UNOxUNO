@@ -219,4 +219,8 @@ implements IUno{
 	public String getNickname() {
 		return this.nickname;
 	}
+	
+	public boolean isMyTurn(){
+		return state.isMyTurn(myId);
+	}
 }
