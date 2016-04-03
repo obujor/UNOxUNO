@@ -124,8 +124,9 @@ public class GameState implements Serializable{
 	 * Restituisce tutti i nomi degli utenti in gioco.
 	 * @return Lista di nomi degli utenti in gioco.
 	 */
+	@SuppressWarnings("unchecked")
 	public ArrayList<String> getUsernames(){
-		return users;
+		return (ArrayList<String>) users.clone();
 	}
 
 	/**

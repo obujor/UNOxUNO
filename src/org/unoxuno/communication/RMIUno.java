@@ -123,6 +123,7 @@ implements IUno{
 		players_registries = r;
 		//System.out.println("Aggiornato stato");
 		myId = state.getUserId(nickname);
+		
 		startGame();
 	}
 
@@ -203,16 +204,19 @@ implements IUno{
 	public void setGameStartListener(GameStart lst) {
 		gameStartListener = lst;
 	}
-	
+
 	public Card drawCard(){
-		return state.getCard(nickname);
+		Card c = state.getCard(nickname);
+		refreshAllStates();
+		return c;
 	}
-	
+
 	public void discardCard(Card c){
 		state.discard(c, nickname);
+		refreshAllStates();
 	}
-        
-        public String getNickname() {
-            return this.nickname;
-        }
+
+	public String getNickname() {
+		return this.nickname;
+	}
 }
