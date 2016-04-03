@@ -8,15 +8,18 @@ package org.unoxuno.game;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import org.newdawn.slick.Color;
 import org.newdawn.slick.GameContainer;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.SlickException;
+import org.newdawn.slick.TrueTypeFont;
 import org.newdawn.slick.gui.AbstractComponent;
 import org.newdawn.slick.gui.ComponentListener;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
 import org.unoxuno.communication.Card;
+import static org.unoxuno.game.MainMenu.trueTypeFont;
 
 /**
  *
@@ -24,15 +27,19 @@ import org.unoxuno.communication.Card;
  */
 public class GameBoard extends BasicGameState {
     
-    Image gameBG, btnImage, btnOverImage, unoDeck;
+    Image gameBG, btnImage, btnOverImage, unoDeck, unoCard;
     int state, centerX = MainClass.width/2, 
         centerY = MainClass.height/2, cardW = 73, cardH=109,
-        maxWidth = MainClass.width-100;
+        maxWidth = MainClass.width-100, playersCardW = cardW/2, 
+        playersCardH = cardH/2;
     GameContainer gc;
     StateBasedGame sbg;
     private final Map<String,Image> cardImages;
-    
+    private final int[][] playersPosX = new int[][] {{centerX},{10, centerX},{10, centerX,MainClass.width-50}};
+    private final int[][] playersPosY = new int[][] {{20}, {centerY, 20},{centerY, 20, centerY}};
     ArrayList<UnoButton> buttons = new ArrayList<UnoButton>();
+    TrueTypeFont txtFontSmall, txtCardNr;
+    Color playersTxtColor = new Color(0,0,0);
     
     public GameBoard(int s) {    
         state = s;
@@ -48,13 +55,16 @@ public class GameBoard extends BasicGameState {
     public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
         this.gc = gc;
         this.sbg = sbg;
+        
+        txtFontSmall = new TrueTypeFont(trueTypeFont.deriveFont(20f), true);
+        txtCardNr  = new TrueTypeFont(trueTypeFont.deriveFont(40f), true);
         initImages();
         addButtons();
     }
     
     private void addButtons() {
-        addButton("Add card", new AddCard(), centerX-100, centerY-100);
-        addButton("Remove card", new DiscardCard(), centerX+100, centerY-100);
+        addButton("Add", new AddCard(), centerX-200, MainClass.height-120);
+        addButton("Remove", new DiscardCard(), centerX, MainClass.height-120);
     }
     
     public void initImages() throws SlickException {
@@ -62,12 +72,14 @@ public class GameBoard extends BasicGameState {
         btnImage = new Image("res/images/btnBg.png");
         btnOverImage = new Image("res/images/btnOver.png");
         unoDeck = new Image("res/images/uno_deck.png").getScaledCopy(106, 154);
+        unoCard = new Image("res/images/uno.png").getScaledCopy(playersCardW, playersCardH);
     }
 
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
         g.drawImage(gameBG, 0, 0);
         drawMainCard(g);
         drawMyCards(g);
+        drawPlayers(g);
         for(UnoButton b : buttons) {
             b.render(gc, g);
         }
@@ -77,7 +89,7 @@ public class GameBoard extends BasicGameState {
         Card c = MainClass.player.getState().getLastDiscardedCard();
         int w = cardW+cardW/3;
         int h = cardH+cardH/3;
-        g.drawImage(new Image(c.getUri()).getScaledCopy(w, h), centerX-w/2, centerY-h/2);
+        g.drawImage(getImage(c).getScaledCopy(w, h), centerX-w/2, centerY-h/2);
         g.drawImage(unoDeck, centerX-w/2-120, centerY-h/2-10);
     }
     
@@ -91,7 +103,19 @@ public class GameBoard extends BasicGameState {
         int initWidth = centerX-(totalWidth/2);
         for(int i=0; i<myCards.size(); i++) {
             Card c = myCards.get(i);
-            g.drawImage(getImage(c), initWidth+i*width, MainClass.height-cardH);
+            g.drawImage(getImage(c), initWidth+i*width, MainClass.height-cardH/2);
+        }
+    }
+    
+    private void drawPlayers(Graphics g) throws SlickException {
+        ArrayList<String> users = MainClass.player.getState().getUsernames();
+        users.remove(MainClass.player.getNickname());
+        
+        for(int i=0; i<users.size(); i++) {
+            int cardsNr = MainClass.player.getState().getHand(users.get(i)).size();
+            txtCardNr.drawString(playersPosX[users.size()-1][i]+playersCardW, playersPosY[users.size()-1][i], Integer.toString(cardsNr), playersTxtColor);
+            txtFontSmall.drawString(playersPosX[users.size()-1][i], playersPosY[users.size()-1][i]-20, users.get(i), playersTxtColor);
+            g.drawImage(unoCard, playersPosX[users.size()-1][i], playersPosY[users.size()-1][i]);
         }
     }
     

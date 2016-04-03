@@ -211,4 +211,8 @@ implements IUno{
 	public void discardCard(Card c){
 		state.discard(c, nickname);
 	}
+        
+        public String getNickname() {
+            return this.nickname;
+        }
 }
