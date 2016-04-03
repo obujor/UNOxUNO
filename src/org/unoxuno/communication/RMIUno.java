@@ -221,6 +221,6 @@ implements IUno{
 	}
 	
 	public boolean isMyTurn(){
-		return state.isMyTurn(myId);
+		return state.isMyTurn(nickname);
 	}
 }

@@ -80,12 +80,16 @@ public class GameState implements Serializable{
 
 	/**
 	 * Controlla se il turno attuale è quello che corrisponde all'utente che ha
-	 * id uguale a quello passato come parametro.
-	 * @param id Id dell'utente di cui si vuole controllare il turno.
+	 * nick uguale a quello passato come parametro.
+	 * @param id Nome dell'utente di cui si vuole controllare il turno.
 	 * @return True se il turno è quello dell'utente, false altrimenti.
 	 */
-	public boolean isMyTurn(int id){
-		return (id == user_id_turn);
+	public boolean isMyTurn(String name){
+		return (name.equals(getUserActualTurn()));
+	}
+	
+	public String getUserActualTurn(){
+		return users.get(user_id_turn);
 	}
 	
 	/**
