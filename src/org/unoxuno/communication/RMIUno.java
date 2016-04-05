@@ -25,7 +25,8 @@ implements IUno{
 	Registry localRegistry;
 	RegistryContainer players_registries;
 	GameStart gameStartListener;
-        StateChanged stateChangeListener;
+	StateChanged stateChangeListener;
+	boolean saidUNO;
 
 	private class PingTask extends TimerTask{
 
@@ -74,6 +75,7 @@ implements IUno{
 	public RMIUno(String name,int port)throws RemoteException{
 		this.nickname = name;
 		this.myId = 0;
+		this.saidUNO = false;
 		localRegistry = LocateRegistry.createRegistry(port);
 		localRegistry.rebind(name, this);
 		state = new GameState(name);
@@ -125,10 +127,10 @@ implements IUno{
 		players_registries = r;
 		//System.out.println("Aggiornato stato");
 		myId = state.getUserId(nickname);
-		
+
 		startGame();
-                if (stateChangeListener != null)
-                    stateChangeListener.activate();
+		if (stateChangeListener != null)
+			stateChangeListener.activate();
 	}
 
 	@Override
@@ -156,9 +158,9 @@ implements IUno{
 		{
 			e.printStackTrace( );
 		}
-                if (stateChangeListener != null)
-                    stateChangeListener.activate();
-                    
+		if (stateChangeListener != null)
+			stateChangeListener.activate();
+
 	}
 
 	public GameState getState() {
@@ -204,15 +206,19 @@ implements IUno{
 	}
 
 	public boolean discardable(Card c){
-		Card last_discarded = state.getLastDiscardedCard();
-		return c.compatibleWith(last_discarded);
+		boolean disc = c.getColor().equals("jolly");
+		if (!disc){
+			Card last_discarded = state.getLastDiscardedCard();
+			disc = c.compatibleWith(last_discarded);
+		}
+		return disc;
 	}
 
 	public void setGameStartListener(GameStart lst) {
 		gameStartListener = lst;
 	}
-        
-        public void setStateChangeListener(StateChanged lst) {
+
+	public void setStateChangeListener(StateChanged lst) {
 		stateChangeListener = lst;
 	}
 
@@ -222,22 +228,38 @@ implements IUno{
 		return c;
 	}
 
-	public void discardCard(Card c){
-		state.discard(c, nickname);
-                state.passTurn();
+	public boolean discardCard(Card c){
+		boolean onlyOne = state.discard(c, nickname);
+		boolean penality = false;
+		if (onlyOne && !this.saidUNO){
+			penality = true;
+			state.getCard(nickname);
+			state.getCard(nickname);
+		}
+		this.saidUNO = false;
+		refreshAllStates();
+		return penality;
+	}
+
+	public void passTurn() {
+		state.passTurn();
+		this.saidUNO = false;
 		refreshAllStates();
 	}
-        
-        public void passTurn() {
-            state.passTurn();
-            refreshAllStates();
-        }
+
+	public void sayUNO(){
+		this.saidUNO = true;
+	}
 
 	public String getNickname() {
 		return this.nickname;
 	}
-	
-	public boolean isMyTurn(){
-		return state.isMyTurn(nickname);
+
+	public String isMyTurn(){
+		String turn = state.isMyTurn(nickname);
+		if (!turn.equals("Ok") && !turn.equals("No"))
+			refreshAllStates();
+		return turn;
 	}
+
 }
