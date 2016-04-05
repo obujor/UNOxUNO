@@ -38,7 +38,7 @@ public class GameBoard extends BasicGameState {
     GameContainer gc;
     StateBasedGame sbg;
     private final Map<String,Image> cardImages;
-    private final int[][] playersPosX = new int[][] {{centerX},{10, centerX},{10, centerX,MainClass.width-50}};
+    private final int[][] playersPosX = new int[][] {{centerX},{20, centerX},{20, centerX,MainClass.width-50}};
     private final int[][] playersPosY = new int[][] {{20}, {centerY, 20},{centerY, 20, centerY}};
     ArrayList<UnoButton> buttons = new ArrayList<UnoButton>();
     ArrayList<UnoCardButton> cardButtons = new ArrayList<UnoCardButton>();
@@ -85,8 +85,10 @@ public class GameBoard extends BasicGameState {
         g.drawImage(gameBG, 0, 0);
         drawMainCard(g);
         drawPlayers(g);
-        for(UnoButton b : buttons) {
-            b.render(gc, g);
+        if (MainClass.player.isMyTurn()) {
+            for(UnoButton b : buttons) {
+                b.render(gc, g);
+            }
         }
         for(UnoCardButton b : cardButtons) {
             b.render(gc, g);
@@ -125,15 +127,21 @@ public class GameBoard extends BasicGameState {
     private void drawPlayers(Graphics g) throws SlickException {
         GameState state = MainClass.player.getState();
         ArrayList<String> users = state.getUsernames();
-        users.remove(MainClass.player.getNickname());
+        int myPos = users.indexOf(MainClass.player.getNickname());
         String userTurn = state.getUserActualTurn();
-        for(int i=0; i<users.size(); i++) {
+        int playerPos = 0;
+        int playerPosInArray = users.size()-2;
+        for(int i=(myPos+1)%users.size(); i!=myPos; i=(i+1)%users.size()) {
             int cardsNr = state.getHand(users.get(i)).size();
-            txtCardNr.drawString(playersPosX[users.size()-1][i]+playersCardW, playersPosY[users.size()-1][i]+10, Integer.toString(cardsNr), playersTxtColor);
             int txtMidle = this.txtFontSmall.getWidth(users.get(i))/2;
+            int cardX = playersPosX[playerPosInArray][playerPos];
+            int textX = cardX-txtMidle+playersCardW/2;
+            textX = textX >=0 ? textX : 0;
+            txtCardNr.drawString(cardX+playersCardW, playersPosY[playerPosInArray][playerPos]+10, Integer.toString(cardsNr), playersTxtColor);
             Color c = (userTurn.equals(users.get(i))) ? activePlayerTxtColor : playersTxtColor;
-            txtFontSmall.drawString(playersPosX[users.size()-1][i]-txtMidle+playersCardW/2, playersPosY[users.size()-1][i]-20, users.get(i), c);
-            g.drawImage(unoCard, playersPosX[users.size()-1][i], playersPosY[users.size()-1][i]);
+            txtFontSmall.drawString(textX, playersPosY[playerPosInArray][playerPos]-20, users.get(i), c);
+            g.drawImage(unoCard, cardX, playersPosY[playerPosInArray][playerPos]);
+            playerPos++;
         }
     }
     

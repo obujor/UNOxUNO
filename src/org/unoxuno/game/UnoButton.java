@@ -5,6 +5,7 @@
  */
 package org.unoxuno.game;
 
+import org.newdawn.slick.Color;
 import org.newdawn.slick.Graphics;
 import org.newdawn.slick.Image;
 import org.newdawn.slick.TrueTypeFont;
@@ -23,6 +24,7 @@ public class UnoButton extends MouseOverArea {
     TrueTypeFont btnFont;
     GUIContext gc;
     static long lastNotified = System.currentTimeMillis();
+    Color txtColor;
     
     public UnoButton(GUIContext gc, Image im, int x, int y, String text, ComponentListener listener) {
         super(gc, im, x, y, listener);
@@ -35,6 +37,7 @@ public class UnoButton extends MouseOverArea {
         this.btnFont = new TrueTypeFont(MainMenu.trueTypeFont.deriveFont(30f), true);
 	this.textLeft = this.x + (this.w/2 - (this.btnFont.getWidth(this.text)/2));
         this.textTop = this.y + (this.h/2 - (this.btnFont.getHeight(this.text)/2));
+        this.txtColor = Color.white;
     }
     
     @Override
@@ -50,7 +53,11 @@ public class UnoButton extends MouseOverArea {
     public void render(GUIContext gc, Graphics g) {
         super.render(gc, g);
         g.drawRect(this.x, this.y, this.w, this.h);
-        this.btnFont.drawString(this.textLeft, this.textTop, this.text);
+        this.btnFont.drawString(this.textLeft, this.textTop, this.text, this.txtColor);
+    }
+    
+    public void setTextColor(Color c) {
+        txtColor = c;
     }
     
 }
