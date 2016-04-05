@@ -21,8 +21,11 @@ public class GameState implements Serializable{
 	private boolean clockwise_sense;
 	private Map<String,ArrayList<Card>> hand;
 	private Map<String,Boolean> user_ready;
+	private Map<String,String> user_penalities;
 	private int user_id_turn;
 	private boolean game_started;
+	private boolean game_finished;
+	private String winner;
 
 	public GameState(String name){
 
@@ -33,8 +36,11 @@ public class GameState implements Serializable{
 		clockwise_sense = true;
 		hand = new HashMap<String,ArrayList<Card>>();
 		user_ready = new HashMap<String,Boolean>();
+		user_penalities = new HashMap<String,String>();
 		user_id_turn = 0;
 		game_started = false;
+		game_finished = false;
+		winner = "";
 
 		hand.put(name, new ArrayList<Card>());
 		user_ready.put(name, false);
@@ -77,6 +83,18 @@ public class GameState implements Serializable{
 	public boolean isGameStarted(){
 		return game_started;
 	}
+	
+	/**
+	 * Controlla se il gioco è finito.
+	 * @return True se il gioco è finito, false altrimenti.
+	 */
+	public boolean isGameFinished(){
+		return game_finished;
+	}
+	
+	public String whoIsTheWinner(){
+		return winner;
+	}
 
 	/**
 	 * Controlla se il turno attuale è quello che corrisponde all'utente che ha
@@ -84,8 +102,35 @@ public class GameState implements Serializable{
 	 * @param id Nome dell'utente di cui si vuole controllare il turno.
 	 * @return True se il turno è quello dell'utente, false altrimenti.
 	 */
-	public boolean isMyTurn(String name){
-		return (name.equals(getUserActualTurn()));
+	public String isMyTurn(String name){
+		String myTurn = "No";
+		if (name.equals(getUserActualTurn())){
+			String penality = user_penalities.remove(name);
+			if (penality != null){
+				if (penality.equals("plus2")){
+					this.getCard(name);
+					this.getCard(name);
+					this.passTurn();
+					myTurn = "Aggiunte due carte";
+				}
+				else if (penality.equals("plus2")){
+					this.getCard(name);
+					this.getCard(name);
+					this.getCard(name);
+					this.getCard(name);
+					this.passTurn();
+					myTurn = "Aggiunte quattro carte";
+				}
+				else if (penality.equals("jump")){
+					this.passTurn();
+					myTurn = "Turno saltato";
+				}
+			}
+			else
+				myTurn = "Ok";
+		}
+		return myTurn;
+				
 	}
 	
 	public String getUserActualTurn(){
@@ -242,12 +287,27 @@ public class GameState implements Serializable{
 	 * dalla mano dell'utente alle carte scartate.
 	 * @param c Carta da scartare
 	 * @param username Nome dell'utente che scarta la carta
+	 * @return Restituisce true se all'utente rimane solo una carta
 	 */
-	public void discard(Card c, String username){
+	public boolean discard(Card c, String username){
 		ArrayList<Card> user_hand = hand.get(username);
 		user_hand.remove(c);
 		hand.put(username,user_hand);
 		discarded.add(c);
+		if (c.getEffect().equals("piu2"))
+			user_penalities.put(username, "plus2");
+		else if (c.getEffect().equals("piu4"))
+			user_penalities.put(username, "plus4");
+		else if (c.getEffect().equals("salta"))
+			user_penalities.put(username, "jump");
+			
+		if (user_hand.isEmpty()){
+			game_finished = true;
+			winner = username;
+		}
+		else
+			this.passTurn();
+		return (user_hand.size() == 1);
 	}
 
 	/**
