@@ -146,20 +146,35 @@ public class GameBoard extends BasicGameState {
     private void setUserCards() {
         ArrayList<Card> myCards = MainClass.player.getMyCards();
         if (myCards.isEmpty()) return;
-        int margin = maxWidth/myCards.size()-cardW;
+
+        Map<String,Integer> cardsCounter = new HashMap<String,Integer>();
+        for(int i=0; i<myCards.size(); i++) {
+            String uri = myCards.get(i).getUri();
+            int counter = cardsCounter.containsKey(uri) ? cardsCounter.get(uri) : 0;
+            cardsCounter.put(uri, counter+1);
+        }
+        
+        int margin = maxWidth/cardsCounter.size()-cardW;
         margin = margin > 10 ? 10 : margin;
         int width = margin+cardW;
-        int totalWidth = myCards.size()*width-margin;
+        int totalWidth = cardsCounter.size()*width-margin;
         int initWidth = centerX-(totalWidth/2);
+        int y = MainClass.height-cardH/2;
+        boolean myTurn = isMyTurn();
+        
         lockButtons.lock();
         cardButtons.clear();
         lockButtons.unlock();
-        int y = MainClass.height-cardH/2;
-        boolean myTurn = isMyTurn();
+        
         try {
-            for(int i=0; i<myCards.size(); i++) {
-                Card c = myCards.get(i);
-                addCardButton(getImage(c), new CardClick(c), initWidth+i*width, y, myTurn);
+            int index = 0;
+            for (Card c: myCards) {
+                int counter = cardsCounter.get(c.getUri());
+                if (counter != 0) {
+                    addCardButton(getImage(c), new CardClick(c), initWidth+index*width, y, myTurn, counter);
+                    cardsCounter.put(c.getUri(), 0);
+                    index++;
+                }
             }
         } catch (SlickException ex) {
             Logger.getLogger(GameBoard.class.getName()).log(Level.SEVERE, null, ex);
@@ -234,9 +249,11 @@ public class GameBoard extends BasicGameState {
         return button;
     }
     
-    protected UnoCardButton addCardButton(Image im, ComponentListener listener, int x, int y, boolean accept) {
+    protected UnoCardButton addCardButton(Image im, ComponentListener listener, int x, int y, boolean accept, int counter) {
         UnoCardButton button = new UnoCardButton(this.gc, im, x, y, listener);
         button.setAcceptingInput(accept);
+        if (counter > 1)
+            button.setText(Integer.toString(counter));
         lockButtons.lock();
         cardButtons.add(button);
         lockButtons.unlock();
