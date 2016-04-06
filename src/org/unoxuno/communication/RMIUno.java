@@ -206,12 +206,8 @@ implements IUno{
 	}
 
 	public boolean discardable(Card c){
-		boolean disc = c.getColor().equals("jolly");
-		if (!disc){
-			Card last_discarded = state.getLastDiscardedCard();
-			disc = c.compatibleWith(last_discarded);
-		}
-		return disc;
+		Card last_discarded = state.getLastDiscardedCard();
+		return c.compatibleWith(last_discarded);
 	}
 
 	public void setGameStartListener(GameStart lst) {
@@ -258,7 +254,7 @@ implements IUno{
 	public boolean isMyTurn(){
 		return state.isMyTurn(nickname);
 	}
-	
+
 	public String checkPenality(){
 		String penality = state.checkPenality(nickname);
 		if (!penality.isEmpty())

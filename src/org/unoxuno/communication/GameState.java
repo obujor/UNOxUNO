@@ -84,7 +84,7 @@ public class GameState implements Serializable{
 	public boolean isGameStarted(){
 		return game_started;
 	}
-	
+
 	/**
 	 * Controlla se il gioco è finito.
 	 * @return True se il gioco è finito, false altrimenti.
@@ -92,7 +92,7 @@ public class GameState implements Serializable{
 	public boolean isGameFinished(){
 		return game_finished;
 	}
-	
+
 	/**
 	 * Restituisce il nome del giocatore vincitore
 	 * @return Username del giocatore che ha vinto il gioco
@@ -100,7 +100,7 @@ public class GameState implements Serializable{
 	public String whoIsTheWinner(){
 		return winner;
 	}
-	
+
 	/**
 	 * Controlla e utilizza le penalità del giocatore passato come parametro
 	 * @param name Username del giocatore
@@ -140,13 +140,13 @@ public class GameState implements Serializable{
 	 */
 	public boolean isMyTurn(String name){
 		return (name.equals(getUserActualTurn()));
-				
+
 	}
-	
+
 	public String getUserActualTurn(){
 		return users.get(user_id_turn);
 	}
-	
+
 	/**
 	 * Restituisce l'id del giocatore che giocherà il prossimo turno
 	 * @return Id del prossimo giocatore in gioco
@@ -157,7 +157,10 @@ public class GameState implements Serializable{
 			next_id = (user_id_turn + 1) % users.size();
 
 		else
-			next_id = (user_id_turn - 1) % users.size();
+			if (user_id_turn == 0)
+				next_id = (users.size()-1);
+			else
+				next_id = (user_id_turn - 1);
 		return next_id;
 
 	}
@@ -167,7 +170,6 @@ public class GameState implements Serializable{
 	 */
 	public void passTurn(){
 		user_id_turn = nextTurnPlayerId();
-
 	}
 
 	/**
@@ -313,7 +315,7 @@ public class GameState implements Serializable{
 			user_penalities.put(nextuser, "jump");
 		else if (c.getEffect().equals("cambio"))
 			this.reverseSense();
-			
+
 		if (user_hand.isEmpty()){
 			game_finished = true;
 			winner = username;
@@ -359,7 +361,7 @@ public class GameState implements Serializable{
 	public boolean getUserReady(String username){
 		return user_ready.get(username);
 	}
-	
+
 	/**
 	 * Restituisce l'ultima carta scartata, ovvero quella su cui ci si deve
 	 * basare per la prossima mossa.
