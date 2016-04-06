@@ -35,6 +35,7 @@ public class GameBoard extends BasicGameState {
         centerY = MainClass.height/2, cardW = 73, cardH=109,
         maxWidth = MainClass.width-100, playersCardW = cardW/2, 
         playersCardH = cardH/2;
+    long systemMills = 0;
     GameContainer gc;
     StateBasedGame sbg;
     private final Map<String,Image> cardImages;
@@ -45,6 +46,7 @@ public class GameBoard extends BasicGameState {
     TrueTypeFont txtFontSmall, txtCardNr;
     Color playersTxtColor = new Color(0,0,0);
     Color activePlayerTxtColor = new Color(0,180,0);
+    String playerPenality;
     
     public GameBoard(int s) {    
         state = s;
@@ -85,11 +87,24 @@ public class GameBoard extends BasicGameState {
         g.drawImage(gameBG, 0, 0);
         drawMainCard(g);
         drawPlayers(g);
-        if (MainClass.player.isMyTurn()) {
+        
+        if (isMyTurn()) {
+            String penality = MainClass.player.checkPenality();
+            if (!penality.isEmpty()) {
+                systemMills = System.currentTimeMillis();
+                playerPenality = penality;
+                System.out.println(">> Penalita': "+playerPenality);
+            }
+
             for(UnoButton b : buttons) {
                 b.render(gc, g);
             }
         }
+        
+        if (!playerPenality.isEmpty() && System.currentTimeMillis()-systemMills < 5000) {
+            txtFontSmall.drawString(centerX-100, MainClass.height-110, playerPenality, Color.red);
+        }
+        
         for(UnoCardButton b : cardButtons) {
             b.render(gc, g);
         }
@@ -113,7 +128,7 @@ public class GameBoard extends BasicGameState {
         int initWidth = centerX-(totalWidth/2);
         cardButtons.clear();
         int y = MainClass.height-cardH/2;
-        boolean myTurn = MainClass.player.isMyTurn();
+        boolean myTurn = isMyTurn();
         try {
             for(int i=0; i<myCards.size(); i++) {
                 Card c = myCards.get(i);
@@ -193,6 +208,10 @@ public class GameBoard extends BasicGameState {
         return button;
     }
     
+    private boolean isMyTurn() {
+        return MainClass.player.isMyTurn();
+    }
+    
     public class GetCard implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
             Card c = MainClass.player.drawCard();
@@ -228,7 +247,7 @@ public class GameBoard extends BasicGameState {
         public void componentActivated(AbstractComponent ac) {}
         public void activate(){
             setUserCards();
-            setButtonsInputAccepted(MainClass.player.isMyTurn());
+            setButtonsInputAccepted(isMyTurn());
         }
     }
     
