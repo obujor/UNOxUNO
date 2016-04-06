@@ -30,7 +30,7 @@ import static org.unoxuno.game.MainMenu.trueTypeFont;
  */
 public class GameBoard extends BasicGameState {
     
-    Image gameBG, btnImage, btnOverImage, unoDeck, unoCard;
+    Image gameBG, btnImage, btnOverImage, unoDeck, unoCard, rotateRight, rotateLeft;
     int state, centerX = MainClass.width/2, 
         centerY = MainClass.height/2, cardW = 73, cardH=109,
         maxWidth = MainClass.width-100, playersCardW = cardW/2, 
@@ -81,6 +81,8 @@ public class GameBoard extends BasicGameState {
         btnOverImage = new Image("res/images/btnOver.png");
         unoDeck = new Image("res/images/uno_deck.png").getScaledCopy(106, 154);
         unoCard = new Image("res/images/uno.png").getScaledCopy(playersCardW, playersCardH);
+        rotateRight = new Image("res/images/rotate-right.png").getScaledCopy(50, 50);
+        rotateLeft = new Image("res/images/rotate-left.png").getScaledCopy(50, 50);
     }
 
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
@@ -100,7 +102,11 @@ public class GameBoard extends BasicGameState {
         } else {
             drawMainCard(g);
             drawPlayers(g);
-
+            if (gState.getSense()) {
+                g.drawImage(rotateRight, MainClass.width-60, 10);
+            } else {
+                g.drawImage(rotateLeft, MainClass.width-60, 10);
+            }
             if (isMyTurn()) {
                 String penality = MainClass.player.checkPenality();
                 if (!penality.isEmpty()) {
