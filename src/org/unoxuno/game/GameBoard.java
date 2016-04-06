@@ -46,7 +46,7 @@ public class GameBoard extends BasicGameState {
     TrueTypeFont txtFontSmall, txtCardNr;
     Color playersTxtColor = new Color(0,0,0);
     Color activePlayerTxtColor = new Color(0,180,0);
-    String playerPenality;
+    String playerPenality = "";
     
     public GameBoard(int s) {    
         state = s;
@@ -85,28 +85,42 @@ public class GameBoard extends BasicGameState {
 
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
         g.drawImage(gameBG, 0, 0);
-        drawMainCard(g);
-        drawPlayers(g);
+        GameState gState = MainClass.player.getState();
         
-        if (isMyTurn()) {
-            String penality = MainClass.player.checkPenality();
-            if (!penality.isEmpty()) {
-                systemMills = System.currentTimeMillis();
-                playerPenality = penality;
-                System.out.println(">> Penalita': "+playerPenality);
+        if (gState.isGameFinished()) {
+            String winner = gState.whoIsTheWinner();
+            String text;
+            if (winner.equals(MainClass.player.getNickname())) {
+                text = "You are the winner!!!";
+                txtCardNr.drawString(centerX-txtCardNr.getWidth(text)/2, centerY, text, activePlayerTxtColor);
+            } else {
+                text = "The winner is "+winner+"! Game over!";
+                txtCardNr.drawString(centerX-txtCardNr.getWidth(text)/2, centerY, text, Color.red);
+            }
+        } else {
+            drawMainCard(g);
+            drawPlayers(g);
+
+            if (isMyTurn()) {
+                String penality = MainClass.player.checkPenality();
+                if (!penality.isEmpty()) {
+                    systemMills = System.currentTimeMillis();
+                    playerPenality = penality;
+                    System.out.println(">> Penalita': "+playerPenality);
+                }
+
+                for(UnoButton b : buttons) {
+                    b.render(gc, g);
+                }
             }
 
-            for(UnoButton b : buttons) {
+            for(UnoCardButton b : cardButtons) {
                 b.render(gc, g);
             }
-        }
-        
-        if (!playerPenality.isEmpty() && System.currentTimeMillis()-systemMills < 5000) {
-            txtFontSmall.drawString(centerX-100, MainClass.height-110, playerPenality, Color.red);
-        }
-        
-        for(UnoCardButton b : cardButtons) {
-            b.render(gc, g);
+            
+            if (!playerPenality.isEmpty() && System.currentTimeMillis()-systemMills < 5000) {
+                txtFontSmall.drawString(centerX-100, MainClass.height-110, playerPenality, Color.red);
+            }
         }
     }
     
@@ -214,6 +228,7 @@ public class GameBoard extends BasicGameState {
     
     public class GetCard implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
+            if (!isMyTurn()) return;
             Card c = MainClass.player.drawCard();
             System.out.println("Pescata carta "+c.getColor()+" "+c.getEffect());
         }
@@ -221,13 +236,17 @@ public class GameBoard extends BasicGameState {
     
     public class Pass implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
+            if (!isMyTurn()) return;
+            System.out.println("Pass turn "+Long.toString(System.currentTimeMillis()));
             MainClass.player.passTurn();
         }
     }
     
     public class SayUno implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
+            if (!isMyTurn()) return;
             System.out.println("UNO!!!");
+            MainClass.player.sayUNO();
         }
     }
     
@@ -237,9 +256,13 @@ public class GameBoard extends BasicGameState {
             card = c;
         }
         public void componentActivated(AbstractComponent ac) {
+            if (!isMyTurn()) return;
             System.out.println("Clicked "+card.getColor()+" "+card.getEffect());
             if (MainClass.player.discardable(card))
-                MainClass.player.discardCard(card);
+                if (MainClass.player.discardCard(card)) {
+                    systemMills = System.currentTimeMillis();
+                    playerPenality = "Non hai detto UNO! Hai preso due carte!";
+                }
         }
     }
     
@@ -247,7 +270,6 @@ public class GameBoard extends BasicGameState {
         public void componentActivated(AbstractComponent ac) {}
         public void activate(){
             setUserCards();
-            setButtonsInputAccepted(isMyTurn());
         }
     }
     
