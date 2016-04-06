@@ -217,7 +217,7 @@ public class GameState implements Serializable{
 	public void removeUser(int id){
 		String name = users.remove(id);
 		for (Card c : hand.get(name))
-			this.discard(c,name);
+			discarded.add(c);
 		hand.remove(name);
 		user_ready.remove(name);
 	}
