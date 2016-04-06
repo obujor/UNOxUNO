@@ -255,11 +255,15 @@ implements IUno{
 		return this.nickname;
 	}
 
-	public String isMyTurn(){
-		String turn = state.isMyTurn(nickname);
-		if (!turn.equals("Ok") && !turn.equals("No"))
+	public boolean isMyTurn(){
+		return state.isMyTurn(nickname);
+	}
+	
+	public String checkPenality(){
+		String penality = state.checkPenality(nickname);
+		if (!penality.isEmpty())
 			refreshAllStates();
-		return turn;
+		return penality;
 	}
 
 }

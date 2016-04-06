@@ -92,8 +92,43 @@ public class GameState implements Serializable{
 		return game_finished;
 	}
 	
+	/**
+	 * Restituisce il nome del giocatore vincitore
+	 * @return Username del giocatore che ha vinto il gioco
+	 */
 	public String whoIsTheWinner(){
 		return winner;
+	}
+	
+	/**
+	 * Controlla e utilizza le penalità del giocatore passato come parametro
+	 * @param name Username del giocatore
+	 * @return La stringa vuota se non ci sono penalità, altrimenti la descrizione della penalità applicata.
+	 */
+	public String checkPenality(String name){
+		String result = "";
+		String penality = user_penalities.remove(name);
+		if (penality != null){
+			if (penality.equals("plus2")){
+				this.getCard(name);
+				this.getCard(name);
+				this.passTurn();
+				result = "Aggiunte due carte";
+			}
+			else if (penality.equals("plus2")){
+				this.getCard(name);
+				this.getCard(name);
+				this.getCard(name);
+				this.getCard(name);
+				this.passTurn();
+				result = "Aggiunte quattro carte";
+			}
+			else if (penality.equals("jump")){
+				this.passTurn();
+				result = "Turno saltato";
+			}
+		}
+		return result;
 	}
 
 	/**
@@ -102,34 +137,8 @@ public class GameState implements Serializable{
 	 * @param id Nome dell'utente di cui si vuole controllare il turno.
 	 * @return True se il turno è quello dell'utente, false altrimenti.
 	 */
-	public String isMyTurn(String name){
-		String myTurn = "No";
-		if (name.equals(getUserActualTurn())){
-			String penality = user_penalities.remove(name);
-			if (penality != null){
-				if (penality.equals("plus2")){
-					this.getCard(name);
-					this.getCard(name);
-					this.passTurn();
-					myTurn = "Aggiunte due carte";
-				}
-				else if (penality.equals("plus2")){
-					this.getCard(name);
-					this.getCard(name);
-					this.getCard(name);
-					this.getCard(name);
-					this.passTurn();
-					myTurn = "Aggiunte quattro carte";
-				}
-				else if (penality.equals("jump")){
-					this.passTurn();
-					myTurn = "Turno saltato";
-				}
-			}
-			else
-				myTurn = "Ok";
-		}
-		return myTurn;
+	public boolean isMyTurn(String name){
+		return (name.equals(getUserActualTurn()));
 				
 	}
 	
@@ -294,12 +303,13 @@ public class GameState implements Serializable{
 		user_hand.remove(c);
 		hand.put(username,user_hand);
 		discarded.add(c);
+		String nextuser = this.getUsername(this.nextTurnPlayerId());
 		if (c.getEffect().equals("piu2"))
-			user_penalities.put(username, "plus2");
+			user_penalities.put(nextuser, "plus2");
 		else if (c.getEffect().equals("piu4"))
-			user_penalities.put(username, "plus4");
+			user_penalities.put(nextuser, "plus4");
 		else if (c.getEffect().equals("salta"))
-			user_penalities.put(username, "jump");
+			user_penalities.put(nextuser, "jump");
 			
 		if (user_hand.isEmpty()){
 			game_finished = true;
