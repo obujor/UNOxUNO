@@ -65,8 +65,9 @@ public class GameState implements Serializable{
 	}
 
 	public void initGame(){
-		Card first_discarded_card = getCard(users.get(0));
-		discard(first_discarded_card,users.get(0));
+		int cardId = (int) (Math.random() * deck.size());
+		Card c = deck.remove(cardId);
+		discarded.add(c);
 		for (String username: users){
 			for (int i=0; i< GameNumbers.init_cards; i++){
 				getCard(username);
@@ -115,7 +116,7 @@ public class GameState implements Serializable{
 				this.passTurn();
 				result = "Aggiunte due carte";
 			}
-			else if (penality.equals("plus2")){
+			else if (penality.equals("plus4")){
 				this.getCard(name);
 				this.getCard(name);
 				this.getCard(name);
@@ -310,6 +311,8 @@ public class GameState implements Serializable{
 			user_penalities.put(nextuser, "plus4");
 		else if (c.getEffect().equals("salta"))
 			user_penalities.put(nextuser, "jump");
+		else if (c.getEffect().equals("cambio"))
+			this.reverseSense();
 			
 		if (user_hand.isEmpty()){
 			game_finished = true;
