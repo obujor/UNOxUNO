@@ -8,6 +8,8 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.unoxuno.utilities.GameNumbers;
 
@@ -26,6 +28,7 @@ public class GameState implements Serializable{
 	private boolean game_started;
 	private boolean game_finished;
 	private String winner;
+        private final Lock lock = new ReentrantLock();
 
 	public GameState(String name){
 
@@ -204,10 +207,13 @@ public class GameState implements Serializable{
 	 * @return Id dell'utente aggiunto.
 	 */
 	public int addUser(String name){
+            lock.lock();
 		users.add(name);
 		hand.put(name, new ArrayList<Card>());
 		user_ready.put(name, false);
+            lock.unlock();
 		return users.size();
+            
 	}
 
 	/**
@@ -215,11 +221,20 @@ public class GameState implements Serializable{
 	 * @param id Id dell'utente da rimuovere
 	 */
 	public void removeUser(int id){
+            lock.lock();
 		String name = users.remove(id);
 		for (Card c : hand.get(name))
 			discarded.add(c);
 		hand.remove(name);
 		user_ready.remove(name);
+                if(id == user_id_turn){
+                    passTurn();
+                }
+                if (users.size()==1){
+                    game_finished = true;
+                    winner = users.get(id);
+		}
+            lock.unlock();
 	}
 
 	/**

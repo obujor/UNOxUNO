@@ -8,6 +8,8 @@ package org.unoxuno.game;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.newdawn.slick.Color;
@@ -47,6 +49,8 @@ public class GameBoard extends BasicGameState {
     Color playersTxtColor = new Color(0,0,0);
     Color activePlayerTxtColor = new Color(0,180,0);
     String playerPenality = "";
+    private final Lock lock = new ReentrantLock();
+    private final Lock lockButtons = new ReentrantLock();
     
     public GameBoard(int s) {    
         state = s;
@@ -88,7 +92,7 @@ public class GameBoard extends BasicGameState {
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
         g.drawImage(gameBG, 0, 0);
         GameState gState = MainClass.player.getState();
-        
+
         if (gState.isGameFinished()) {
             String winner = gState.whoIsTheWinner();
             String text;
@@ -114,16 +118,17 @@ public class GameBoard extends BasicGameState {
                     playerPenality = penality;
                     System.out.println(">> Penalita': "+playerPenality);
                 }
-
                 for(UnoButton b : buttons) {
                     b.render(gc, g);
                 }
             }
-
+            
+            lockButtons.lock();
             for(UnoCardButton b : cardButtons) {
                 b.render(gc, g);
             }
-            
+            lockButtons.unlock();
+
             if (!playerPenality.isEmpty() && System.currentTimeMillis()-systemMills < 5000) {
                 txtFontSmall.drawString(centerX-100, MainClass.height-110, playerPenality, Color.red);
             }
@@ -146,7 +151,9 @@ public class GameBoard extends BasicGameState {
         int width = margin+cardW;
         int totalWidth = myCards.size()*width-margin;
         int initWidth = centerX-(totalWidth/2);
+        lockButtons.lock();
         cardButtons.clear();
+        lockButtons.unlock();
         int y = MainClass.height-cardH/2;
         boolean myTurn = isMyTurn();
         try {
@@ -181,11 +188,17 @@ public class GameBoard extends BasicGameState {
     }
     
     private Image getImage(Card c) throws SlickException {
-        String uri = c.getUri();
-        if (cardImages.containsKey(uri))
-            return cardImages.get(uri);
-        Image img = new Image(uri).getScaledCopy(cardW, cardH);
-        cardImages.put(uri, img);
+        Image img;
+        lock.lock();
+        try {
+            String uri = c.getUri();
+            if (cardImages.containsKey(uri))
+                return cardImages.get(uri);
+            img = new Image(uri).getScaledCopy(cardW, cardH);
+            cardImages.put(uri, img);
+        } finally {
+            lock.unlock();
+        }
         return img;
     }
     
@@ -224,7 +237,9 @@ public class GameBoard extends BasicGameState {
     protected UnoCardButton addCardButton(Image im, ComponentListener listener, int x, int y, boolean accept) {
         UnoCardButton button = new UnoCardButton(this.gc, im, x, y, listener);
         button.setAcceptingInput(accept);
+        lockButtons.lock();
         cardButtons.add(button);
+        lockButtons.unlock();
         return button;
     }
     
