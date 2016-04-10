@@ -261,5 +261,10 @@ implements IUno{
 			refreshAllStates();
 		return penality;
 	}
+	
+	public boolean discardJollyCard(Card c, String color){
+		c.changeColor(color);
+		return this.discardCard(c);
+	}
 
 }

@@ -34,9 +34,17 @@ public class Card implements Serializable{
 		if (this.getColor().equals(otherCard.getColor()) 
 			|| this.getEffect().equals(otherCard.getEffect()))
 			cmp = true;
-		if (this.getColor().equals("jolly") || otherCard.getColor().equals("jolly"))
+		if (this.isJollyCard() || otherCard.isJollyCard())
 			cmp = true;
 		return cmp;
+	}
+	
+	public boolean isJollyCard(){
+		return this.getColor().equals("jolly");
+	}
+	
+	public void changeColor(String newcolor){
+		this.color = newcolor;
 	}
 
 }
