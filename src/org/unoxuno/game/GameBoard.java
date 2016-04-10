@@ -318,6 +318,7 @@ public class GameBoard extends BasicGameState {
                     playerPenality = noUNO;
                 }
                 selectedColorCard = null;
+                return;
             }
             if (MainClass.player.discardable(card) && card.isJollyCard()) {
                 selectedColorCard = card;
