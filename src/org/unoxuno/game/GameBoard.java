@@ -25,6 +25,7 @@ import org.newdawn.slick.state.StateBasedGame;
 import org.unoxuno.communication.Card;
 import org.unoxuno.communication.GameState;
 import static org.unoxuno.game.MainMenu.trueTypeFont;
+import org.unoxuno.utilities.GameStrings;
 
 /**
  *
@@ -51,6 +52,7 @@ public class GameBoard extends BasicGameState {
     String playerPenality = "";
     private final Lock lock = new ReentrantLock();
     private final Lock lockButtons = new ReentrantLock();
+    Card selectedColorCard;
     
     public GameBoard(int s) {    
         state = s;
@@ -144,7 +146,18 @@ public class GameBoard extends BasicGameState {
     }
     
     private void setUserCards() {
-        ArrayList<Card> myCards = MainClass.player.getMyCards();
+        ArrayList<Card> myCards;
+        boolean colorSelection = false;
+        
+        if (selectedColorCard != null) {
+            myCards = new ArrayList<Card>();
+            for ( String color : GameStrings.colors) {
+                myCards.add(new Card(color, selectedColorCard.getEffect()));
+            }
+            colorSelection = true;
+        } else 
+            myCards = MainClass.player.getMyCards();
+        
         if (myCards.isEmpty()) return;
 
         Map<String,Integer> cardsCounter = new HashMap<String,Integer>();
@@ -171,7 +184,7 @@ public class GameBoard extends BasicGameState {
             for (Card c: myCards) {
                 int counter = cardsCounter.get(c.getUri());
                 if (counter != 0) {
-                    addCardButton(getImage(c), new CardClick(c), initWidth+index*width, y, myTurn, counter);
+                    addCardButton(getImage(c), new CardClick(c, colorSelection), initWidth+index*width, y, myTurn, counter);
                     cardsCounter.put(c.getUri(), 0);
                     index++;
                 }
@@ -290,16 +303,31 @@ public class GameBoard extends BasicGameState {
     
     public class CardClick implements ComponentListener {
         Card card;
-        public CardClick(Card c) {
+        boolean colorSelection;
+        String noUNO = "Non hai detto UNO! Hai preso due carte!";
+        public CardClick(Card c, boolean cs) {
             card = c;
+            colorSelection = cs;
         }
         public void componentActivated(AbstractComponent ac) {
             if (!isMyTurn()) return;
             System.out.println("Clicked "+card.getColor()+" "+card.getEffect());
+            if (colorSelection) {
+                if (MainClass.player.discardJollyCard(selectedColorCard, card.getColor())) {
+                    systemMills = System.currentTimeMillis();
+                    playerPenality = noUNO;
+                }
+                selectedColorCard = null;
+            }
+            if (MainClass.player.discardable(card) && card.isJollyCard()) {
+                selectedColorCard = card;
+                setUserCards();
+                return;
+            }
             if (MainClass.player.discardable(card))
                 if (MainClass.player.discardCard(card)) {
                     systemMills = System.currentTimeMillis();
-                    playerPenality = "Non hai detto UNO! Hai preso due carte!";
+                    playerPenality = noUNO;
                 }
         }
     }
