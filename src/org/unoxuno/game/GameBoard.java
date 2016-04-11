@@ -76,9 +76,9 @@ public class GameBoard extends BasicGameState {
     }
     
     private void addButtons() {
-        addButton("Pesca", new GetCard(), centerX-300, MainClass.height-120);
-        addButton("Passa", new Pass(), centerX-100, MainClass.height-120);
-        addButton("UNO!", new SayUno(), centerX+100, MainClass.height-120);
+        addButton("Pesca", new GetCard(), centerX-300, MainClass.height-140);
+        addButton("Passa", new Pass(), centerX-100, MainClass.height-140);
+        addButton("UNO!", new SayUno(), centerX+100, MainClass.height-140);
     }
     
     public void initImages() throws SlickException {
@@ -116,8 +116,7 @@ public class GameBoard extends BasicGameState {
             if (isMyTurn()) {
                 String penality = MainClass.player.checkPenality();
                 if (!penality.isEmpty()) {
-                    systemMills = System.currentTimeMillis();
-                    playerPenality = penality;
+                    setErrorMessage(penality);
                     System.out.println(">> Penalita': "+playerPenality);
                 }
                 for(UnoButton b : buttons) {
@@ -132,7 +131,7 @@ public class GameBoard extends BasicGameState {
             lockButtons.unlock();
 
             if (!playerPenality.isEmpty() && System.currentTimeMillis()-systemMills < 5000) {
-                txtFontSmall.drawString(centerX-100, MainClass.height-110, playerPenality, Color.red);
+                txtFontSmall.drawString(centerX-100, MainClass.height-90, playerPenality, Color.red);
             }
         }
     }
@@ -277,11 +276,20 @@ public class GameBoard extends BasicGameState {
         return MainClass.player.isMyTurn();
     }
     
+    private void setErrorMessage(String msg) {
+        systemMills = System.currentTimeMillis();
+        playerPenality = msg;
+    }
+    
     public class GetCard implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
             if (!isMyTurn()) return;
-            Card c = MainClass.player.drawCard();
-            System.out.println("Pescata carta "+c.getColor()+" "+c.getEffect());
+            if (MainClass.player.canDraw()) {
+                Card c = MainClass.player.drawCard();
+                System.out.println("Pescata carta "+c.getColor()+" "+c.getEffect());
+            } else {
+                setErrorMessage("Hai gia' pescato una carta!");
+            }
         }
     }
     
@@ -314,8 +322,7 @@ public class GameBoard extends BasicGameState {
             System.out.println("Clicked "+card.getColor()+" "+card.getEffect());
             if (colorSelection) {
                 if (MainClass.player.discardJollyCard(selectedColorCard, card.getColor())) {
-                    systemMills = System.currentTimeMillis();
-                    playerPenality = noUNO;
+                    setErrorMessage(noUNO);
                 }
                 selectedColorCard = null;
                 return;
@@ -327,8 +334,7 @@ public class GameBoard extends BasicGameState {
             }
             if (MainClass.player.discardable(card))
                 if (MainClass.player.discardCard(card)) {
-                    systemMills = System.currentTimeMillis();
-                    playerPenality = noUNO;
+                    setErrorMessage(noUNO);
                 }
         }
     }
