@@ -83,20 +83,20 @@ implements IUno{
 		this.saidUNO = false;
 		this.already_draw = false;
                 String ipAddr = "";
-                try {
-                    ipAddr = InetAddress.getLocalHost().getHostAddress();
-                } catch (UnknownHostException ex) {
-                    Logger.getLogger(RMIUno.class.getName()).log(Level.SEVERE, null, ex);
-                }
-                if (!ipAddr.isEmpty()) {
-                    AnchorSocketFactory sf;
-                    try {
-                        sf = new AnchorSocketFactory(InetAddress.getByName(ipAddr));
-                        localRegistry = LocateRegistry.createRegistry(port, null, sf);
-                    } catch (UnknownHostException ex) {
-                        Logger.getLogger(RMIUno.class.getName()).log(Level.SEVERE, null, ex);
-                    }
-                }
+//                try {
+//                    ipAddr = InetAddress.getLocalHost().getHostAddress();
+//                } catch (UnknownHostException ex) {
+//                    Logger.getLogger(RMIUno.class.getName()).log(Level.SEVERE, null, ex);
+//                }
+//                if (!ipAddr.isEmpty()) {
+//                    AnchorSocketFactory sf;
+//                    try {
+//                        sf = new AnchorSocketFactory(InetAddress.getByName(ipAddr));
+//                        localRegistry = LocateRegistry.createRegistry(port, null, sf);
+//                    } catch (UnknownHostException ex) {
+//                        Logger.getLogger(RMIUno.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
                 if (localRegistry == null) {
                     localRegistry = LocateRegistry.createRegistry(port);
                 }
