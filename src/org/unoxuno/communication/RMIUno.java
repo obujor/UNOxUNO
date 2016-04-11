@@ -1,5 +1,7 @@
 package org.unoxuno.communication;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
@@ -10,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.unoxuno.game.GameBoard.StateChanged;
 import org.unoxuno.game.MainMenu.GameStart;
 import org.unoxuno.utilities.GameNumbers;
@@ -78,11 +82,29 @@ implements IUno{
 		this.myId = 0;
 		this.saidUNO = false;
 		this.already_draw = false;
-		localRegistry = LocateRegistry.createRegistry(port);
+                String ipAddr = "";
+                try {
+                    ipAddr = InetAddress.getLocalHost().getHostAddress();
+                } catch (UnknownHostException ex) {
+                    Logger.getLogger(RMIUno.class.getName()).log(Level.SEVERE, null, ex);
+                }
+                if (!ipAddr.isEmpty()) {
+                    AnchorSocketFactory sf;
+                    try {
+                        sf = new AnchorSocketFactory(InetAddress.getByName(ipAddr));
+                        localRegistry = LocateRegistry.createRegistry(port, null, sf);
+                    } catch (UnknownHostException ex) {
+                        Logger.getLogger(RMIUno.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                }
+                if (localRegistry == null) {
+                    localRegistry = LocateRegistry.createRegistry(port);
+                }
+		
 		localRegistry.rebind(name, this);
 		state = new GameState(name);
 		players_registries = new RegistryContainer(name,localRegistry);
-		System.out.println("Binding eseguito su "+name+" in porta "+port);
+		System.out.println("Binding eseguito su "+name+"("+ipAddr+") in porta "+port);
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new PingTask(), 5000, 5000);
 
