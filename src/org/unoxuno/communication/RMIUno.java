@@ -27,6 +27,7 @@ implements IUno{
 	GameStart gameStartListener;
 	StateChanged stateChangeListener;
 	boolean saidUNO;
+	boolean already_draw;
 
 	private class PingTask extends TimerTask{
 
@@ -76,6 +77,7 @@ implements IUno{
 		this.nickname = name;
 		this.myId = 0;
 		this.saidUNO = false;
+		this.already_draw = false;
 		localRegistry = LocateRegistry.createRegistry(port);
 		localRegistry.rebind(name, this);
 		state = new GameState(name);
@@ -221,6 +223,7 @@ implements IUno{
 	public Card drawCard(){
 		Card c = state.getCard(nickname);
 		refreshAllStates();
+		already_draw = true;
 		return c;
 	}
 
@@ -233,6 +236,7 @@ implements IUno{
 			state.getCard(nickname);
 		}
 		this.saidUNO = false;
+		this.already_draw = false;
 		refreshAllStates();
 		return penality;
 	}
@@ -240,6 +244,7 @@ implements IUno{
 	public void passTurn() {
 		state.passTurn();
 		this.saidUNO = false;
+		this.already_draw = false;
 		refreshAllStates();
 	}
 
@@ -265,6 +270,10 @@ implements IUno{
 	public boolean discardJollyCard(Card c, String color){
 		c.changeColor(color);
 		return this.discardCard(c);
+	}
+	
+	public boolean canDraw(){
+		return !this.already_draw;
 	}
 
 }
