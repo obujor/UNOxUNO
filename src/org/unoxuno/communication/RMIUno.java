@@ -35,6 +35,7 @@ implements IUno{
 	boolean saidUNO;
 	boolean already_draw;
         public final Lock lockCards = new ReentrantLock();
+        public final Lock lockUsers = new ReentrantLock();
 
 	private class PingTask extends TimerTask{
 
@@ -153,7 +154,9 @@ implements IUno{
 		state = s;
 		players_registries = r;
 		//System.out.println("Aggiornato stato");
+                lockUsers.lock();
 		myId = state.getUserId(nickname);
+                lockUsers.unlock();
 
 		startGame();
 		if (stateChangeListener != null)
@@ -168,6 +171,7 @@ implements IUno{
 	private void refreshAllStates(){
 		try
 		{
+                    lockUsers.lock();
 			Map<String,Registry> reg = players_registries.getAllRegistries();
 			for (String regname : state.getUsernames()){
 				if (!regname.equals(nickname)){
@@ -176,6 +180,7 @@ implements IUno{
 					tempServer.refreshState(state,players_registries);
 				}
 			}
+                    lockUsers.unlock();
 		}
 		catch(NotBoundException e)
 		{
@@ -256,7 +261,9 @@ implements IUno{
 
 	public boolean discardCard(Card c){
             lockCards.lock();
+            lockUsers.lock();
 		boolean onlyOne = state.discard(c, nickname);
+            lockCards.unlock();
 		boolean penality = false;
 		if (onlyOne && !this.saidUNO){
 			penality = true;
@@ -271,7 +278,9 @@ implements IUno{
 	}
 
 	public void passTurn() {
+            lockUsers.lock();
 		state.passTurn();
+            lockCards.unlock();
 		this.saidUNO = false;
 		this.already_draw = false;
 		refreshAllStates();

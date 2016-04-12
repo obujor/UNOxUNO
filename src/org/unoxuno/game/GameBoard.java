@@ -195,6 +195,7 @@ public class GameBoard extends BasicGameState {
     }
     
     private void drawPlayers(Graphics g) throws SlickException {
+        MainClass.player.lockUsers.lock();
         GameState state = MainClass.player.getState();
         ArrayList<String> users = state.getUsernames();
         int myPos = users.indexOf(MainClass.player.getNickname());
@@ -213,6 +214,7 @@ public class GameBoard extends BasicGameState {
             g.drawImage(unoCard, cardX, playersPosY[playerPosInArray][playerPos]);
             playerPos++;
         }
+        MainClass.player.lockUsers.unlock();
     }
     
     private Image getImage(Card c) throws SlickException {
