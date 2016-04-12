@@ -238,7 +238,9 @@ implements IUno{
 	}
 
 	public boolean discardable(Card c){
+            lockCards.lock();
 		Card last_discarded = state.getLastDiscardedCard();
+            lockCards.unlock();
 		return c.compatibleWith(last_discarded);
 	}
 
@@ -263,7 +265,7 @@ implements IUno{
             lockCards.lock();
             lockUsers.lock();
 		boolean onlyOne = state.discard(c, nickname);
-            lockUsers.unlock();
+            
 		boolean penality = false;
 		if (onlyOne && !this.saidUNO){
 			penality = true;
@@ -272,6 +274,7 @@ implements IUno{
 		}
 		this.saidUNO = false;
 		this.already_draw = false;
+            lockUsers.unlock();
 		refreshAllStates();
             lockCards.unlock();
 		return penality;
