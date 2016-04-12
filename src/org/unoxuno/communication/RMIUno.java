@@ -12,6 +12,8 @@ import java.util.ArrayList;
 import java.util.Map;
 import java.util.Timer;
 import java.util.TimerTask;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.unoxuno.game.GameBoard.StateChanged;
@@ -32,6 +34,7 @@ implements IUno{
 	StateChanged stateChangeListener;
 	boolean saidUNO;
 	boolean already_draw;
+        public final Lock lockCards = new ReentrantLock();
 
 	private class PingTask extends TimerTask{
 
@@ -243,13 +246,16 @@ implements IUno{
 	}
 
 	public Card drawCard(){
+            lockCards.lock();
 		Card c = state.getCard(nickname);
 		refreshAllStates();
 		already_draw = true;
+            lockCards.unlock();
 		return c;
 	}
 
 	public boolean discardCard(Card c){
+            lockCards.lock();
 		boolean onlyOne = state.discard(c, nickname);
 		boolean penality = false;
 		if (onlyOne && !this.saidUNO){
@@ -260,6 +266,7 @@ implements IUno{
 		this.saidUNO = false;
 		this.already_draw = false;
 		refreshAllStates();
+            lockCards.unlock();
 		return penality;
 	}
 

@@ -147,7 +147,7 @@ public class GameBoard extends BasicGameState {
     private void setUserCards() {
         ArrayList<Card> myCards;
         boolean colorSelection = false;
-        
+        MainClass.player.lockCards.lock();
         if (selectedColorCard != null) {
             myCards = new ArrayList<Card>();
             for ( String color : GameStrings.colors) {
@@ -191,6 +191,7 @@ public class GameBoard extends BasicGameState {
         } catch (SlickException ex) {
             Logger.getLogger(GameBoard.class.getName()).log(Level.SEVERE, null, ex);
         }
+        MainClass.player.lockCards.unlock();
     }
     
     private void drawPlayers(Graphics g) throws SlickException {
