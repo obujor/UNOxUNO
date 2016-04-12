@@ -163,7 +163,6 @@ public class GameBoard extends BasicGameState {
     private void setUserCards() {
         ArrayList<Card> myCards;
         boolean colorSelection = false;
-        MainClass.player.lockCards.lock();
         if (selectedColorCard != null) {
             myCards = new ArrayList<Card>();
             for ( String color : GameStrings.colors) {
@@ -171,7 +170,7 @@ public class GameBoard extends BasicGameState {
             }
             colorSelection = true;
         } else 
-            myCards = MainClass.player.getMyCards();
+            myCards = playerCards;
         
         if (myCards.isEmpty()) return;
 
@@ -188,7 +187,6 @@ public class GameBoard extends BasicGameState {
         int totalWidth = cardsCounter.size()*width-margin;
         int initWidth = centerX-(totalWidth/2);
         int y = MainClass.height-cardH/2;
-        boolean myTurn = isMyTurn();
         
         lockButtons.lock();
         cardButtons.clear();
@@ -199,7 +197,7 @@ public class GameBoard extends BasicGameState {
             for (Card c: myCards) {
                 int counter = cardsCounter.get(c.getUri());
                 if (counter != 0) {
-                    addCardButton(getImage(c), new CardClick(c, colorSelection), initWidth+index*width, y, myTurn, counter);
+                    addCardButton(getImage(c), new CardClick(c, colorSelection), initWidth+index*width, y, isMyTurn, counter);
                     cardsCounter.put(c.getUri(), 0);
                     index++;
                 }
@@ -207,7 +205,6 @@ public class GameBoard extends BasicGameState {
         } catch (SlickException ex) {
             Logger.getLogger(GameBoard.class.getName()).log(Level.SEVERE, null, ex);
         }
-        MainClass.player.lockCards.unlock();
     }
     
     private void updateStateVariables() {
@@ -224,7 +221,6 @@ public class GameBoard extends BasicGameState {
             }
         }
         isMyTurn = MainClass.player.isMyTurn();
-        
         lastDiscardedCard = MainClass.player.getState().getLastDiscardedCard();
         gState = MainClass.player.getState();
         userTurn = gState.getUserActualTurn();
@@ -237,7 +233,7 @@ public class GameBoard extends BasicGameState {
         myPosInUsers = users.indexOf(myNickname);
         gameSenseClockwise = gState.getSense();
         gameFinished = gState.isGameFinished();
-        
+        playerCards = (ArrayList<Card>)MainClass.player.getMyCards().clone();
         MainClass.player.lockUsers.unlock();
         MainClass.player.lockCards.unlock();
         System.out.println(">>UScito in update");

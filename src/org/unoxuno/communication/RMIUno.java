@@ -174,6 +174,7 @@ implements IUno{
 			Map<String,Registry> reg = players_registries.getAllRegistries();
 			for (String regname : state.getUsernames()){
 				if (!regname.equals(nickname)){
+                                    System.out.println("Rfresh "+regname);
 					IUno tempServer = 
 							(IUno) reg.get(regname).lookup(regname);
 					tempServer.refreshState(state,players_registries);
@@ -278,7 +279,7 @@ implements IUno{
             lockUsers.unlock();
             lockCards.unlock();
 		
-            
+            System.out.println("exit discard");
 		return penality;
 	}
 
