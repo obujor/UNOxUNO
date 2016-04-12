@@ -263,7 +263,7 @@ implements IUno{
             lockCards.lock();
             lockUsers.lock();
 		boolean onlyOne = state.discard(c, nickname);
-            lockCards.unlock();
+            lockUsers.unlock();
 		boolean penality = false;
 		if (onlyOne && !this.saidUNO){
 			penality = true;
@@ -280,7 +280,7 @@ implements IUno{
 	public void passTurn() {
             lockUsers.lock();
 		state.passTurn();
-            lockCards.unlock();
+            lockUsers.unlock();
 		this.saidUNO = false;
 		this.already_draw = false;
 		refreshAllStates();
