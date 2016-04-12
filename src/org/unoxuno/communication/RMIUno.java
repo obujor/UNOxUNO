@@ -302,7 +302,9 @@ implements IUno{
 	}
 
 	public String checkPenality(){
+            lockCards.lock();
 		String penality = state.checkPenality(nickname);
+            lockCards.unlock();
 		if (!penality.isEmpty())
 			refreshAllStates();
 		return penality;
