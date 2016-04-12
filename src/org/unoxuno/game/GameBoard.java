@@ -37,7 +37,8 @@ public class GameBoard extends BasicGameState {
     int state, centerX = MainClass.width/2, 
         centerY = MainClass.height/2, cardW = 73, cardH=109,
         maxWidth = MainClass.width-100, playersCardW = cardW/2, 
-        playersCardH = cardH/2;
+        playersCardH = cardH/2, myPosInUsers = 0, 
+        mainCardW  = cardW+cardW/3, mainCardH = cardH+cardH/3;
     long systemMills = 0;
     GameContainer gc;
     StateBasedGame sbg;
@@ -49,10 +50,15 @@ public class GameBoard extends BasicGameState {
     TrueTypeFont txtFontSmall, txtCardNr;
     Color playersTxtColor = new Color(0,0,0);
     Color activePlayerTxtColor = new Color(0,180,0);
-    String playerPenality = "";
+    String playerPenality = "", userTurn = "", myNickname = "";
     private final Lock lock = new ReentrantLock();
     private final Lock lockButtons = new ReentrantLock();
-    Card selectedColorCard;
+    Card selectedColorCard, lastDiscardedCard;
+    GameState gState;
+    ArrayList<String> users;
+    ArrayList<Integer> usersCardsNr;
+    ArrayList<Card> playerCards;
+    boolean gameSenseClockwise = true, gameFinished = false, isMyTurn = false;
     
     public GameBoard(int s) {    
         state = s;
@@ -93,55 +99,65 @@ public class GameBoard extends BasicGameState {
 
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
         g.drawImage(gameBG, 0, 0);
-        GameState gState = MainClass.player.getState();
-
-        if (gState.isGameFinished()) {
-            String winner = gState.whoIsTheWinner();
-            String text;
-            if (winner.equals(MainClass.player.getNickname())) {
-                text = "You are the winner!!!";
-                txtCardNr.drawString(centerX-txtCardNr.getWidth(text)/2, centerY, text, activePlayerTxtColor);
-            } else {
-                text = "The winner is "+winner+"! Game over!";
-                txtCardNr.drawString(centerX-txtCardNr.getWidth(text)/2, centerY, text, Color.red);
-            }
-        } else {
-            drawMainCard(g);
-            drawPlayers(g);
-            if (gState.getSense()) {
-                g.drawImage(rotateRight, MainClass.width-60, 10);
-            } else {
-                g.drawImage(rotateLeft, MainClass.width-60, 10);
-            }
-            if (isMyTurn()) {
-                String penality = MainClass.player.checkPenality();
-                if (!penality.isEmpty()) {
-                    setErrorMessage(penality);
-                    System.out.println(">> Penalita': "+playerPenality);
-                }
-                for(UnoButton b : buttons) {
-                    b.render(gc, g);
-                }
-            }
-            
-            lockButtons.lock();
-            for(UnoCardButton b : cardButtons) {
+        if (gameFinished) {
+            showTheWinner();
+            return;
+        }
+        
+        drawMainCard(g);
+        drawPlayers(g);
+        drawButtons(g);
+        drawPlayerCards(g);
+        drawGameSense(g);
+        drawPenalityMsg();
+    }
+    
+    private void drawButtons(Graphics g) {
+        if (isMyTurn) {
+            for(UnoButton b : buttons) {
                 b.render(gc, g);
-            }
-            lockButtons.unlock();
-
-            if (!playerPenality.isEmpty() && System.currentTimeMillis()-systemMills < 5000) {
-                txtFontSmall.drawString(centerX-100, MainClass.height-90, playerPenality, Color.red);
             }
         }
     }
     
+    private void drawPlayerCards(Graphics g) {
+        lockButtons.lock();
+        for(UnoCardButton b : cardButtons) {
+            b.render(gc, g);
+        }
+        lockButtons.unlock();
+    }
+    
+    private void showTheWinner() {
+        String winner = gState.whoIsTheWinner();
+        String text;
+        if (winner.equals(myNickname)) {
+            text = "You are the winner!!!";
+            txtCardNr.drawString(centerX-txtCardNr.getWidth(text)/2, centerY, text, activePlayerTxtColor);
+        } else {
+            text = "The winner is "+winner+"! Game over!";
+            txtCardNr.drawString(centerX-txtCardNr.getWidth(text)/2, centerY, text, Color.red);
+        }
+    }
+    
+    private void drawGameSense(Graphics g) {
+        if (gameSenseClockwise) {
+            g.drawImage(rotateRight, MainClass.width-60, 10);
+        } else {
+            g.drawImage(rotateLeft, MainClass.width-60, 10);
+        }
+    }
+    
+    private void drawPenalityMsg() {
+        if (!playerPenality.isEmpty() && System.currentTimeMillis()-systemMills < 5000) {
+            txtFontSmall.drawString(centerX-100, MainClass.height-90, playerPenality, Color.red);
+        }
+    }
+    
     private void drawMainCard(Graphics g) throws SlickException {
-        Card c = MainClass.player.getState().getLastDiscardedCard();
-        int w = cardW+cardW/3;
-        int h = cardH+cardH/3;
-        g.drawImage(getImage(c).getScaledCopy(w, h), centerX-w/2, centerY-h/2);
-        g.drawImage(unoDeck, centerX-w/2-120, centerY-h/2-10);
+        if (lastDiscardedCard == null) return;
+        g.drawImage(getImage(lastDiscardedCard).getScaledCopy(mainCardW, mainCardH), centerX-mainCardW/2, centerY-mainCardH/2);
+        g.drawImage(unoDeck, centerX-mainCardW/2-120, centerY-mainCardH/2-10);
     }
     
     private void setUserCards() {
@@ -194,16 +210,44 @@ public class GameBoard extends BasicGameState {
         MainClass.player.lockCards.unlock();
     }
     
-    private void drawPlayers(Graphics g) throws SlickException {
+    private void updateStateVariables() {
+        System.out.println(">> Entrato in update");
+        MainClass.player.lockCards.lock();
         MainClass.player.lockUsers.lock();
-        GameState state = MainClass.player.getState();
-        ArrayList<String> users = state.getUsernames();
-        int myPos = users.indexOf(MainClass.player.getNickname());
-        String userTurn = state.getUserActualTurn();
+        
+        isMyTurn = MainClass.player.isMyTurn();
+        if (isMyTurn) {
+            String penality = MainClass.player.checkPenality();
+            if (!penality.isEmpty()) {
+                setErrorMessage(penality);
+                System.out.println(">> Penalita': "+playerPenality);
+            }
+        }
+        isMyTurn = MainClass.player.isMyTurn();
+        
+        lastDiscardedCard = MainClass.player.getState().getLastDiscardedCard();
+        gState = MainClass.player.getState();
+        userTurn = gState.getUserActualTurn();
+        users = gState.getUsernames();
+        usersCardsNr = new ArrayList<Integer>();
+        for(String user : users) {
+            usersCardsNr.add(gState.getHand(user).size());
+        }
+        myNickname = MainClass.player.getNickname();
+        myPosInUsers = users.indexOf(myNickname);
+        gameSenseClockwise = gState.getSense();
+        gameFinished = gState.isGameFinished();
+        
+        MainClass.player.lockUsers.unlock();
+        MainClass.player.lockCards.unlock();
+        System.out.println(">>UScito in update");
+    }
+    
+    private void drawPlayers(Graphics g) throws SlickException {
         int playerPos = 0;
         int playerPosInArray = users.size()-2;
-        for(int i=(myPos+1)%users.size(); i!=myPos; i=(i+1)%users.size()) {
-            int cardsNr = state.getHand(users.get(i)).size();
+        for(int i=(myPosInUsers+1)%users.size(); i!=myPosInUsers; i=(i+1)%users.size()) {
+            int cardsNr = usersCardsNr.get(i);
             int txtMidle = this.txtFontSmall.getWidth(users.get(i))/2;
             int cardX = playersPosX[playerPosInArray][playerPos];
             int textX = cardX-txtMidle+playersCardW/2;
@@ -214,7 +258,6 @@ public class GameBoard extends BasicGameState {
             g.drawImage(unoCard, cardX, playersPosY[playerPosInArray][playerPos]);
             playerPos++;
         }
-        MainClass.player.lockUsers.unlock();
     }
     
     private Image getImage(Card c) throws SlickException {
@@ -345,6 +388,7 @@ public class GameBoard extends BasicGameState {
     public class StateChanged implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {}
         public void activate(){
+            updateStateVariables();
             setUserCards();
         }
     }

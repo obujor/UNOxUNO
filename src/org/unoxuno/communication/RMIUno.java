@@ -153,11 +153,11 @@ implements IUno{
 	public void refreshState(GameState s, RegistryContainer r) throws RemoteException {
 		state = s;
 		players_registries = r;
-		//System.out.println("Aggiornato stato");
+		System.out.println("Aggiornato stato");
                 lockUsers.lock();
 		myId = state.getUserId(nickname);
                 lockUsers.unlock();
-
+                System.out.println("Aggiornato stato 2");
 		startGame();
 		if (stateChangeListener != null)
 			stateChangeListener.activate();
@@ -171,7 +171,6 @@ implements IUno{
 	private void refreshAllStates(){
 		try
 		{
-                    lockUsers.lock();
 			Map<String,Registry> reg = players_registries.getAllRegistries();
 			for (String regname : state.getUsernames()){
 				if (!regname.equals(nickname)){
@@ -180,7 +179,6 @@ implements IUno{
 					tempServer.refreshState(state,players_registries);
 				}
 			}
-                    lockUsers.unlock();
 		}
 		catch(NotBoundException e)
 		{
@@ -255,7 +253,9 @@ implements IUno{
 	public Card drawCard(){
             lockCards.lock();
 		Card c = state.getCard(nickname);
+            lockUsers.lock();
 		refreshAllStates();
+            lockUsers.unlock();
 		already_draw = true;
             lockCards.unlock();
 		return c;
@@ -274,19 +274,22 @@ implements IUno{
 		}
 		this.saidUNO = false;
 		this.already_draw = false;
+                refreshAllStates();
             lockUsers.unlock();
-		refreshAllStates();
             lockCards.unlock();
+		
+            
 		return penality;
 	}
 
 	public void passTurn() {
             lockUsers.lock();
 		state.passTurn();
-            lockUsers.unlock();
+            
 		this.saidUNO = false;
 		this.already_draw = false;
 		refreshAllStates();
+            lockUsers.unlock();
 	}
 
 	public void sayUNO(){
@@ -302,9 +305,7 @@ implements IUno{
 	}
 
 	public String checkPenality(){
-            lockCards.lock();
 		String penality = state.checkPenality(nickname);
-            lockCards.unlock();
 		if (!penality.isEmpty())
 			refreshAllStates();
 		return penality;
