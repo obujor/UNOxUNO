@@ -36,6 +36,7 @@ implements IUno{
 	boolean already_draw;
         public final Lock lockCards = new ReentrantLock();
         public final Lock lockUsers = new ReentrantLock();
+        boolean stateChanged = true;
 
 	private class PingTask extends TimerTask{
 
@@ -86,21 +87,6 @@ implements IUno{
 		this.myId = 0;
 		this.saidUNO = false;
 		this.already_draw = false;
-                String ipAddr = "";
-//                try {
-//                    ipAddr = InetAddress.getLocalHost().getHostAddress();
-//                } catch (UnknownHostException ex) {
-//                    Logger.getLogger(RMIUno.class.getName()).log(Level.SEVERE, null, ex);
-//                }
-//                if (!ipAddr.isEmpty()) {
-//                    AnchorSocketFactory sf;
-//                    try {
-//                        sf = new AnchorSocketFactory(InetAddress.getByName(ipAddr));
-//                        localRegistry = LocateRegistry.createRegistry(port, null, sf);
-//                    } catch (UnknownHostException ex) {
-//                        Logger.getLogger(RMIUno.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
                 if (localRegistry == null) {
                     localRegistry = LocateRegistry.createRegistry(port);
                 }
@@ -108,7 +94,7 @@ implements IUno{
 		localRegistry.rebind(name, this);
 		state = new GameState(name);
 		players_registries = new RegistryContainer(name,localRegistry);
-		System.out.println("Binding eseguito su "+name+"("+ipAddr+") in porta "+port);
+		System.out.println("Binding eseguito su "+name+" in porta "+port);
 		Timer t = new Timer();
 		t.scheduleAtFixedRate(new PingTask(), 5000, 5000);
 
@@ -153,14 +139,11 @@ implements IUno{
 	public void refreshState(GameState s, RegistryContainer r) throws RemoteException {
 		state = s;
 		players_registries = r;
-		System.out.println("Aggiornato stato");
                 lockUsers.lock();
 		myId = state.getUserId(nickname);
                 lockUsers.unlock();
-                System.out.println("Aggiornato stato 2");
 		startGame();
-		if (stateChangeListener != null)
-			stateChangeListener.activate();
+		notifyStateChanged();
 	}
 
 	@Override
@@ -174,7 +157,6 @@ implements IUno{
 			Map<String,Registry> reg = players_registries.getAllRegistries();
 			for (String regname : state.getUsernames()){
 				if (!regname.equals(nickname)){
-                                    System.out.println("Rfresh "+regname);
 					IUno tempServer = 
 							(IUno) reg.get(regname).lookup(regname);
 					tempServer.refreshState(state,players_registries);
@@ -189,9 +171,7 @@ implements IUno{
 		{
 			e.printStackTrace( );
 		}
-		if (stateChangeListener != null)
-			stateChangeListener.activate();
-
+		notifyStateChanged();
 	}
 
 	public GameState getState() {
@@ -320,5 +300,16 @@ implements IUno{
 	public boolean canDraw(){
 		return !this.already_draw;
 	}
+        
+        public boolean isStateChanged() {
+            boolean changed = stateChanged;
+            if (stateChanged)
+                stateChanged = false;
+            return changed;
+        }
+        
+        private void notifyStateChanged() {
+            stateChanged = true;
+        }
 
 }

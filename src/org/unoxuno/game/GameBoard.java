@@ -58,7 +58,8 @@ public class GameBoard extends BasicGameState {
     ArrayList<String> users;
     ArrayList<Integer> usersCardsNr;
     ArrayList<Card> playerCards;
-    boolean gameSenseClockwise = true, gameFinished = false, isMyTurn = false;
+    boolean gameSenseClockwise = true, gameFinished = false, isMyTurn = false,
+            needSetUserCards = false;
     
     public GameBoard(int s) {    
         state = s;
@@ -102,6 +103,17 @@ public class GameBoard extends BasicGameState {
         if (gameFinished) {
             showTheWinner();
             return;
+        }
+        
+        if (MainClass.player.isStateChanged()) {
+            System.out.println("State changed "+Long.toString(System.currentTimeMillis()));
+            updateStateVariables();
+            setUserCards();
+        }
+        
+        if (needSetUserCards) {
+            setUserCards();
+            needSetUserCards = false;
         }
         
         drawMainCard(g);
@@ -338,8 +350,11 @@ public class GameBoard extends BasicGameState {
     public class Pass implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
             if (!isMyTurn()) return;
-            System.out.println("Pass turn "+Long.toString(System.currentTimeMillis()));
-            MainClass.player.passTurn();
+            if (MainClass.player.canDraw()) {
+                setErrorMessage("Devi pescare una carta prima!");
+            } else {
+                MainClass.player.passTurn();
+            }
         }
     }
     
@@ -371,7 +386,8 @@ public class GameBoard extends BasicGameState {
             }
             if (MainClass.player.discardable(card) && card.isJollyCard()) {
                 selectedColorCard = card;
-                setUserCards();
+                needSetUserCards = true;
+                //setUserCards();
                 return;
             }
             if (MainClass.player.discardable(card))
