@@ -43,8 +43,18 @@ public class GameBoard extends BasicGameState {
     GameContainer gc;
     StateBasedGame sbg;
     private final Map<String,Image> cardImages;
-    private final int[][] playersPosX = new int[][] {{centerX},{20, centerX},{20, centerX,MainClass.width-50}};
-    private final int[][] playersPosY = new int[][] {{20}, {centerY, 20},{centerY, 20, centerY}};
+    private final int[][] playersPosX = new int[][] {{centerX},{20, centerX},{20, centerX,MainClass.width-80},
+                                                    {20, centerX-150,centerX+150,MainClass.width-80},
+                                                    {20, centerX-150, centerX, centerX+150,MainClass.width-80},
+                                                    {20, 20, centerX-150, centerX, centerX+150,MainClass.width-80},
+                                                    {20, 20, centerX-150, centerX, centerX+150,MainClass.width-80, MainClass.width-80},
+                                                    {20, 20, centerX-200, centerX-80, centerX+80, centerX+200,MainClass.width-80, MainClass.width-80}};
+    private final int[][] playersPosY = new int[][] {{20}, {centerY, 20},{centerY, 20, centerY},
+                                                    {centerY, 20, 20, centerY},
+                                                    {centerY, 20, 20, 20, centerY},
+                                                    {centerY+50,centerY-50, 20, 20, 20, centerY},
+                                                    {centerY+50,centerY-50, 20, 20, 20, centerY-50, centerY+50},
+                                                    {centerY+50,centerY-50, 20, 20, 20, 20, centerY-50, centerY+50}};
     ArrayList<UnoButton> buttons = new ArrayList<UnoButton>();
     ArrayList<UnoCardButton> cardButtons = new ArrayList<UnoCardButton>();
     TrueTypeFont txtFontSmall, txtCardNr;

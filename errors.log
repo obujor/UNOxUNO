@@ -1,0 +1,13 @@
+
+Exception in thread "main" java.lang.NullPointerException
+        at org.unoxuno.communication.RMIUno.discardJollyCard(RMIUno.java:296)
+        at org.unoxuno.game.GameBoard$CardClick.componentActivated(GameBoard.java:385)
+        at org.newdawn.slick.gui.AbstractComponent.notifyListeners(AbstractComponent.java:82)
+        at org.unoxuno.game.UnoCardButton.mousePressed(UnoCardButton.java:43)
+        at org.newdawn.slick.Input.poll(Input.java:1217)
+        at org.newdawn.slick.GameContainer.updateAndRender(GameContainer.java:641)
+        at org.newdawn.slick.AppGameContainer.gameLoop(AppGameContainer.java:411)
+        at org.newdawn.slick.AppGameContainer.start(AppGameContainer.java:321)
+        at org.unoxuno.game.MainClass.main(MainClass.java:90)
+
+

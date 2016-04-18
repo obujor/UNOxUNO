@@ -4,6 +4,7 @@ import java.awt.Font;
 import java.awt.FontFormatException;
 import java.io.File;
 import java.io.IOException;
+import java.rmi.RemoteException;
 import java.util.ArrayList;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -17,6 +18,8 @@ import org.newdawn.slick.gui.AbstractComponent;
 import org.newdawn.slick.gui.ComponentListener;
 import org.newdawn.slick.state.BasicGameState;
 import org.newdawn.slick.state.StateBasedGame;
+import org.unoxuno.communication.RMIUno;
+import static org.unoxuno.game.MainClass.player;
 
 public class MainMenu extends BasicGameState {
 	
@@ -28,6 +31,7 @@ public class MainMenu extends BasicGameState {
         TrueTypeFont txtFont, txtFontSmall;
         Color txtColor = new Color(0,0,0);
         public static java.awt.Font trueTypeFont;
+        boolean debugCreated = false;
         
 	public MainMenu(int s) {
             buttons = new ArrayList<UnoButton>();
@@ -90,7 +94,21 @@ public class MainMenu extends BasicGameState {
         
         @Override
         public void enter(GameContainer gc, StateBasedGame sbg) {
-            setButtonsInputAccepted(true);
+            if (MainClass.isDebug && state == 0 && !debugCreated) {
+                String room = "Nickname";
+                int port = 4500;
+                String roomIp = "localhost";
+                if (MainClass.playerNr.equals("0")) {
+                    createRoom(room, port);
+                } else {
+                    joinRoom(room.concat(MainClass.playerNr), port+Integer.parseInt(MainClass.playerNr), roomIp, port, room);
+                    MainClass.player.setReady(true);
+                }
+                debugCreated = true;
+                sbg.enterState(MainClass.roomViewer);
+            } else {
+                setButtonsInputAccepted(true);
+            }
         }
         
         public void setButtonsInputAccepted(boolean accept) {
@@ -157,5 +175,23 @@ public class MainMenu extends BasicGameState {
                     sbg.enterState(MainClass.gameBoard);
                 activated = true;    
             }
+        }
+                
+        public void createRoom(String nick, int port) {
+            createPlayer(nick, port);
+        }
+        
+        public void joinRoom(String nick, int port, String roomIp, int roomPort, String room) {
+            createPlayer(nick, port);
+            MainClass.player.connectSend(nick, roomPort, room, roomIp);
+        }
+        
+        private void createPlayer(String nick, int port) {
+            try {
+                MainClass.player = new RMIUno(nick, port);
+            } catch (RemoteException ex) {
+                Logger.getLogger(MainClass.class.getName()).log(Level.SEVERE, null, ex);
+            }
+            MainClass.player.setGameStartListener(new GameStart());
         }
 }

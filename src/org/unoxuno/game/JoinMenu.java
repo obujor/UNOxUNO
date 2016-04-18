@@ -40,9 +40,9 @@ public class JoinMenu extends MainMenu {
         txtLeftsmall = centerX - (txtFontSmall.getWidth(insertName)/2);
         
         nickname = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+30, 150, 25);
-        nickname.setText("Nickname2");
+        nickname.setText("Nickname2".concat(MainClass.playerNr));
         port = new TextField(gc, txtFontSmall, centerX+50, initTop+titleHeight+30, 50, 25);
-        port.setText("4600");
+        port.setText("4600".concat(MainClass.playerNr));
         roomIp = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+60, 150, 25);
         roomIp.setText("localhost");
         serverPort = new TextField(gc, txtFontSmall, centerX+50, initTop+titleHeight+60, 50, 25);
@@ -91,14 +91,8 @@ public class JoinMenu extends MainMenu {
     
     public class JoinRoom implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
-            try {
-                MainClass.player = new RMIUno(nickname.getText(), Integer.parseInt(port.getText()));
-                MainClass.player.setGameStartListener(new GameStart());
-                MainClass.player.connectSend(nickname.getText(), Integer.parseInt(serverPort.getText()), room.getText(), roomIp.getText());
-                sbg.enterState(MainClass.roomViewer);
-            } catch (RemoteException ex) {
-                Logger.getLogger(CreateRoomMenu.class.getName()).log(Level.SEVERE, null, ex);
-            }
+            joinRoom(nickname.getText(), Integer.parseInt(port.getText()), roomIp.getText(), Integer.parseInt(serverPort.getText()), room.getText());
+            sbg.enterState(MainClass.roomViewer);
         }
     }
 }
