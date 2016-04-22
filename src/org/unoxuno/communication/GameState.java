@@ -29,6 +29,7 @@ public class GameState implements Serializable{
 	private boolean game_finished;
 	private String winner;
 	private final Lock lock = new ReentrantLock();
+	private int clock;
 
 	public GameState(String name){
 
@@ -44,6 +45,7 @@ public class GameState implements Serializable{
 		game_started = false;
 		game_finished = false;
 		winner = "";
+		clock = 0;
 
 		hand.put(name, new ArrayList<Card>());
 		user_ready.put(name, false);
@@ -155,17 +157,21 @@ public class GameState implements Serializable{
 	 * @return Id del prossimo giocatore in gioco
 	 */
 	public int nextTurnPlayerId(){
+		return nextPlayerId(user_id_turn);
+
+	}
+	
+	public int nextPlayerId(int id){
 		int next_id;
 		if (clockwise_sense)
-			next_id = (user_id_turn + 1) % users.size();
+			next_id = (id + 1) % users.size();
 
 		else
-			if (user_id_turn == 0)
+			if (id == 0)
 				next_id = (users.size()-1);
 			else
 				next_id = (user_id_turn - 1);
 		return next_id;
-
 	}
 
 	/**
@@ -227,6 +233,7 @@ public class GameState implements Serializable{
 			discarded.add(c);
 		hand.remove(name);
 		user_ready.remove(name);
+		user_penalities.remove(name);
 		if(id == user_id_turn){
 			passTurn();
 		}
@@ -249,15 +256,6 @@ public class GameState implements Serializable{
 				return i;
 		}
 		return 0;
-	}
-
-	/**
-	 * Restituisce l'id dell'utente successivo
-	 * @param id Id dell'utente che fa la richiesta
-	 * @return Id dell'utente successivo a quello che fa la richiesta
-	 */
-	public int getNextId(int id){
-		return (id + 1) % users.size();
 	}
 
 	/**
@@ -388,5 +386,17 @@ public class GameState implements Serializable{
 	 */
 	public Card getLastDiscardedCard(){
 		return discarded.get(discarded.size()-1);
+	}
+	
+	public void incrementClock(){
+		clock++;
+	}
+	
+	public int getClock(){
+		return clock;
+	}
+	
+	public void setAsMyTurn(int id){
+		this.user_id_turn = id;
 	}
 }

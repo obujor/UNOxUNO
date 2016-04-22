@@ -1,8 +1,5 @@
 package org.unoxuno.communication;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -14,8 +11,6 @@ import java.util.Timer;
 import java.util.TimerTask;
 import java.util.concurrent.locks.Lock;
 import java.util.concurrent.locks.ReentrantLock;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.unoxuno.game.GameBoard.StateChanged;
 import org.unoxuno.game.MainMenu.GameStart;
 import org.unoxuno.utilities.GameNumbers;
@@ -34,50 +29,53 @@ implements IUno{
 	StateChanged stateChangeListener;
 	boolean saidUNO;
 	boolean already_draw;
-        public final Lock lockCards = new ReentrantLock();
-        public final Lock lockUsers = new ReentrantLock();
-        boolean stateChanged = true;
+	public final Lock lockCards = new ReentrantLock();
+	public final Lock lockUsers = new ReentrantLock();
+	boolean stateChanged = true;
 
 	private class PingTask extends TimerTask{
 
 		@Override
 		public void run() {
-			boolean changed = false;
-			boolean checknext = true;
+			if (state.isMyTurn(nickname))
+				return;
+			boolean checknext = false;
+			String leader_name = state.getUserActualTurn();
+			int actual_id = state.getUserId(leader_name);
+			try
+			{
+				IUno tempServer = 
+						(IUno) players_registries.getRegistry(leader_name).lookup(leader_name);
+				tempServer.ping();
+			}
+			catch(NotBoundException e)
+			{
+				e.printStackTrace( );
+			}
+			catch(RemoteException e)
+			{
+				checknext = true;
+			}
+			
 			while (checknext){
-				checknext = false;
-				int nextId = state.getNextId(myId);
-				if (nextId != myId){
-					String nextname = state.getUsername(nextId);
-					try
-					{
-						IUno tempServer = 
-								(IUno) players_registries.getRegistry(nextname).lookup(nextname);
-						tempServer.ping(nickname);
-					}
-					catch(ConnectException e){
-						System.out.println("Successivo non trovato, rimozione");
-						state.removeUser(nextId);
-						players_registries.removeRegistry(nextname);
-						checknext = true;
-						changed = true;
-						if (nextId < myId){
-							myId--;
-						}
-					}
-					catch(NotBoundException e)
-					{
-						e.printStackTrace( );
-					}
-					catch(RemoteException e)
-					{
-						e.printStackTrace( );
-					}
+				actual_id = state.nextPlayerId(actual_id);
+				String actual_username = state.getUsername(actual_id);
+				try
+				{
+					IUno tempServer = 
+							(IUno) players_registries.getRegistry(actual_username).lookup(actual_username);
+					tempServer.youAreTheLeader();
+					checknext = false;
+				}
+				catch(NotBoundException e)
+				{
+					e.printStackTrace( );
+				}
+				catch(RemoteException e)
+				{
+					checknext = true;
 				}
 			}
-			if (changed)
-				refreshAllStates();
-
 		}
 
 	}
@@ -87,16 +85,16 @@ implements IUno{
 		this.myId = 0;
 		this.saidUNO = false;
 		this.already_draw = false;
-                if (localRegistry == null) {
-                    localRegistry = LocateRegistry.createRegistry(port);
-                }
-		
+		if (localRegistry == null) {
+			localRegistry = LocateRegistry.createRegistry(port);
+		}
+
 		localRegistry.rebind(name, this);
 		state = new GameState(name);
 		players_registries = new RegistryContainer(name,localRegistry);
 		System.out.println("Binding eseguito su "+name+" in porta "+port);
 		Timer t = new Timer();
-		t.scheduleAtFixedRate(new PingTask(), 5000, 5000);
+		t.scheduleAtFixedRate(new PingTask(), 3000, 3000);
 
 	}
 
@@ -139,38 +137,42 @@ implements IUno{
 	public void refreshState(GameState s, RegistryContainer r) throws RemoteException {
 		state = s;
 		players_registries = r;
-                lockUsers.lock();
+		lockUsers.lock();
 		myId = state.getUserId(nickname);
-                lockUsers.unlock();
+		lockUsers.unlock();
 		startGame();
 		notifyStateChanged();
 	}
 
 	@Override
-	public void ping(String name) throws RemoteException {
+	public int ping() throws RemoteException {
 		//System.out.println("Pingato da "+name);
+		return this.state.getClock();
 	}
 
 	private void refreshAllStates(){
-		try
-		{
-			Map<String,Registry> reg = players_registries.getAllRegistries();
-			for (String regname : state.getUsernames()){
-				if (!regname.equals(nickname)){
+		this.state.incrementClock();
+
+		Map<String,Registry> reg = players_registries.getAllRegistries();
+		for (String regname : state.getUsernames()){
+			if (!regname.equals(nickname)){
+				try
+				{
 					IUno tempServer = 
 							(IUno) reg.get(regname).lookup(regname);
 					tempServer.refreshState(state,players_registries);
 				}
+				catch(NotBoundException e)
+				{
+					e.printStackTrace( );
+				}
+				catch(RemoteException e)
+				{
+					e.printStackTrace( );
+				}
 			}
 		}
-		catch(NotBoundException e)
-		{
-			e.printStackTrace( );
-		}
-		catch(RemoteException e)
-		{
-			e.printStackTrace( );
-		}
+
 		notifyStateChanged();
 	}
 
@@ -217,9 +219,9 @@ implements IUno{
 	}
 
 	public boolean discardable(Card c){
-            lockCards.lock();
+		lockCards.lock();
 		Card last_discarded = state.getLastDiscardedCard();
-            lockCards.unlock();
+		lockCards.unlock();
 		return c.compatibleWith(last_discarded);
 	}
 
@@ -232,21 +234,21 @@ implements IUno{
 	}
 
 	public Card drawCard(){
-            lockCards.lock();
+		lockCards.lock();
 		Card c = state.getCard(nickname);
-            lockUsers.lock();
+		lockUsers.lock();
 		refreshAllStates();
-            lockUsers.unlock();
+		lockUsers.unlock();
 		already_draw = true;
-            lockCards.unlock();
+		lockCards.unlock();
 		return c;
 	}
 
 	public boolean discardCard(Card c){
-            lockCards.lock();
-            lockUsers.lock();
+		lockCards.lock();
+		lockUsers.lock();
 		boolean onlyOne = state.discard(c, nickname);
-            
+
 		boolean penality = false;
 		if (onlyOne && !this.saidUNO){
 			penality = true;
@@ -255,22 +257,22 @@ implements IUno{
 		}
 		this.saidUNO = false;
 		this.already_draw = false;
-                refreshAllStates();
-            lockUsers.unlock();
-            lockCards.unlock();
-		
-            System.out.println("exit discard");
+		refreshAllStates();
+		lockUsers.unlock();
+		lockCards.unlock();
+
+		System.out.println("exit discard");
 		return penality;
 	}
 
 	public void passTurn() {
-            lockUsers.lock();
+		lockUsers.lock();
 		state.passTurn();
-            
+
 		this.saidUNO = false;
 		this.already_draw = false;
 		refreshAllStates();
-            lockUsers.unlock();
+		lockUsers.unlock();
 	}
 
 	public void sayUNO(){
@@ -291,25 +293,93 @@ implements IUno{
 			refreshAllStates();
 		return penality;
 	}
-	
+
 	public boolean discardJollyCard(Card c, String color){
 		c.changeColor(color);
 		return this.discardCard(c);
 	}
-	
+
 	public boolean canDraw(){
 		return !this.already_draw;
 	}
-        
-        public boolean isStateChanged() {
-            boolean changed = stateChanged;
-            if (stateChanged)
-                stateChanged = false;
-            return changed;
-        }
-        
-        private void notifyStateChanged() {
-            stateChanged = true;
-        }
+
+	public boolean isStateChanged() {
+		boolean changed = stateChanged;
+		if (stateChanged)
+			stateChanged = false;
+		return changed;
+	}
+
+	private void notifyStateChanged() {
+		stateChanged = true;
+	}
+
+	@Override
+	public boolean youAreTheLeader() throws RemoteException {
+		Map<String,Registry> reg = players_registries.getAllRegistries();
+		ArrayList<String> users_crashed = new ArrayList<String>();
+		for (String regname : state.getUsernames()){
+			if (!regname.equals(nickname)){
+				try{
+					IUno tempServer = 
+							(IUno) reg.get(regname).lookup(regname);
+					GameState temp_state = tempServer.requestState();
+					int temp_state_id = temp_state.getClock();
+					if (temp_state_id > this.state.getClock()){
+						this.state = temp_state;
+					}
+				}
+				catch(NotBoundException e)
+				{
+					e.printStackTrace( );
+				}
+				catch(RemoteException e)
+				{
+					users_crashed.add(regname);
+				}
+			}
+		}
+		for (String user_to_remove : users_crashed){
+			if (this.state.getUsernames().contains(user_to_remove))
+				this.state.removeUser(this.state.getUserId(user_to_remove));
+		}
+		this.myId = this.state.getUserId(nickname);
+		this.state.setAsMyTurn(myId);
+		refreshAllStates();
+		return true;
+	}
+
+	@Override
+	public GameState requestState() throws RemoteException {
+		// TODO Auto-generated method stub
+		return this.state;
+	}
+	
+	public void checkAllUsersState(){
+		Map<String,Registry> reg = players_registries.getAllRegistries();
+		ArrayList<String> users_crashed = new ArrayList<String>();
+		for (String regname : state.getUsernames()){
+			if (!regname.equals(nickname)){
+				try{
+					IUno tempServer = 
+							(IUno) reg.get(regname).lookup(regname);
+					tempServer.ping();
+				}
+				catch(NotBoundException e)
+				{
+					e.printStackTrace( );
+				}
+				catch(RemoteException e)
+				{
+					users_crashed.add(regname);
+				}
+			}
+		}
+		for (String user_to_remove : users_crashed){
+			if (this.state.getUsernames().contains(user_to_remove))
+				this.state.removeUser(this.state.getUserId(user_to_remove));
+		}
+		this.myId = this.state.getUserId(nickname);
+	}
 
 }

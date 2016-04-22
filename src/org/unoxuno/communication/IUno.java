@@ -7,7 +7,9 @@ import java.rmi.registry.Registry;
 public interface IUno extends Remote {
 	void connectReply(String name, Registry r) throws RemoteException;
 	void refreshState(GameState s, RegistryContainer r) throws RemoteException;
-	void ping(String name) throws RemoteException;
+	int ping() throws RemoteException;
+	boolean youAreTheLeader() throws RemoteException;
+	GameState requestState() throws RemoteException;
 }
 
 
