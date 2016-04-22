@@ -119,6 +119,9 @@ public class GameBoard extends BasicGameState {
             System.out.println("State changed "+Long.toString(System.currentTimeMillis()));
             updateStateVariables();
             setUserCards();
+            if (isMyTurn) {
+                MainClass.player.checkAllUsersState();
+            }
         }
         
         if (needSetUserCards) {
