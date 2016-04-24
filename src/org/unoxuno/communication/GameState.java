@@ -239,7 +239,7 @@ public class GameState implements Serializable{
 		}
 		if (users.size()==1){
 			game_finished = true;
-			winner = users.get(id);
+			winner = users.get(0);
 		}
 		lock.unlock();
 	}

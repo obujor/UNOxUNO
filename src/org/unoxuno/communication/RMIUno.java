@@ -1,5 +1,6 @@
 package org.unoxuno.communication;
 
+import java.rmi.ConnectException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -47,33 +48,47 @@ implements IUno{
 				IUno tempServer = 
 						(IUno) players_registries.getRegistry(leader_name).lookup(leader_name);
 				tempServer.ping();
+				System.out.println("Server pingato e presente!");
+			}
+			catch(ConnectException e)
+			{
+				checknext = true;
+				System.out.println("Server non presente, elezione");
 			}
 			catch(NotBoundException e)
 			{
-				e.printStackTrace( );
+				//e.printStackTrace( );
 			}
 			catch(RemoteException e)
 			{
-				checknext = true;
+				
+				//e.printStackTrace( );
 			}
-			
+
 			while (checknext){
-				actual_id = state.nextPlayerId(actual_id);
+				actual_id = state.nextPlayerId(actual_id);	
 				String actual_username = state.getUsername(actual_id);
 				try
 				{
+					if (actual_username.equals(nickname)){
+						youAreTheLeader();
+						return;
+					}
 					IUno tempServer = 
 							(IUno) players_registries.getRegistry(actual_username).lookup(actual_username);
 					tempServer.youAreTheLeader();
 					checknext = false;
 				}
+				catch(ConnectException e){
+					checknext = true;
+				}
 				catch(NotBoundException e)
 				{
-					e.printStackTrace( );
+					//e.printStackTrace( );
 				}
 				catch(RemoteException e)
 				{
-					checknext = true;
+					//e.printStackTrace( );
 				}
 			}
 		}
@@ -116,11 +131,11 @@ implements IUno{
 		}
 		catch(NotBoundException e)
 		{
-			e.printStackTrace( );
+			//e.printStackTrace( );
 		}
 		catch(RemoteException e)
 		{
-			e.printStackTrace( );
+			//e.printStackTrace( );
 		}
 	}
 
@@ -162,13 +177,17 @@ implements IUno{
 							(IUno) reg.get(regname).lookup(regname);
 					tempServer.refreshState(state,players_registries);
 				}
+				catch(ConnectException e)
+				{
+					//e.printStackTrace( );
+				}
 				catch(NotBoundException e)
 				{
-					e.printStackTrace( );
+					//e.printStackTrace( );
 				}
 				catch(RemoteException e)
 				{
-					e.printStackTrace( );
+					//e.printStackTrace( );
 				}
 			}
 		}
@@ -331,11 +350,15 @@ implements IUno{
 				}
 				catch(NotBoundException e)
 				{
-					e.printStackTrace( );
+					//e.printStackTrace( );
+				}
+				catch(ConnectException e)
+				{
+					users_crashed.add(regname);
 				}
 				catch(RemoteException e)
 				{
-					users_crashed.add(regname);
+					//e.printStackTrace();
 				}
 			}
 		}
@@ -354,7 +377,7 @@ implements IUno{
 		// TODO Auto-generated method stub
 		return this.state;
 	}
-	
+
 	public void checkAllUsersState(){
 		Map<String,Registry> reg = players_registries.getAllRegistries();
 		ArrayList<String> users_crashed = new ArrayList<String>();
@@ -367,11 +390,15 @@ implements IUno{
 				}
 				catch(NotBoundException e)
 				{
-					e.printStackTrace( );
+					//e.printStackTrace( );
+				}
+				catch(ConnectException e)
+				{
+					users_crashed.add(regname);
 				}
 				catch(RemoteException e)
 				{
-					users_crashed.add(regname);
+					//e.printStackTrace( );
 				}
 			}
 		}
