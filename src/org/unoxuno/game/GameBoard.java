@@ -214,6 +214,9 @@ public class GameBoard extends BasicGameState {
         int y = MainClass.height-cardH/2;
         
         lockButtons.lock();
+        for(UnoCardButton b : cardButtons) {
+            b.setAcceptingInput(false);
+        }
         cardButtons.clear();
         lockButtons.unlock();
         
@@ -400,7 +403,6 @@ public class GameBoard extends BasicGameState {
             if (MainClass.player.discardable(card) && card.isJollyCard()) {
                 selectedColorCard = card;
                 needSetUserCards = true;
-                //setUserCards();
                 return;
             }
             if (MainClass.player.discardable(card))
