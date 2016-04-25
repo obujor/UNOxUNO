@@ -407,6 +407,7 @@ implements IUno{
 				this.state.removeUser(this.state.getUserId(user_to_remove));
 		}
 		this.myId = this.state.getUserId(nickname);
+		this.state.setAsMyTurn(myId);
 	}
 
 }
