@@ -27,7 +27,7 @@ public class JoinMenu extends MainMenu {
     String title = "Join room";
     String insertName = "Insert nickname";
     int textLeft, titleHeight, txtLeftsmall;
-    TextField nickname, room, roomIp, port, serverPort;
+    TextField nickname, roomIp, port, serverPort;
     public JoinMenu(int state) {
         super(state);
     }
@@ -35,26 +35,33 @@ public class JoinMenu extends MainMenu {
     @Override
     public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
         super.init(gc, sbg);
-        textLeft = centerX - (txtFont.getWidth(title)/2);
-        titleHeight = txtFont.getHeight(title)+20;
-        txtLeftsmall = centerX - (txtFontSmall.getWidth(insertName)/2);
-        
-        nickname = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+30, 150, 25);
-        nickname.setText("Nickname2".concat(MainClass.playerNr));
-        port = new TextField(gc, txtFontSmall, centerX+50, initTop+titleHeight+30, 50, 25);
-        port.setText("4600".concat(MainClass.playerNr));
-        roomIp = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+60, 150, 25);
-        roomIp.setText("localhost");
-        serverPort = new TextField(gc, txtFontSmall, centerX+50, initTop+titleHeight+60, 50, 25);
-        serverPort.setText("4500");
-        room = new TextField(gc, txtFontSmall, centerX-75, initTop+titleHeight+90, 150, 25);
-        room.setText("Nickname");
-        setInputAccepting(false);
     }
     
     @Override
     public void enter(GameContainer gc, StateBasedGame sbg) {
         super.enter(gc, sbg);
+        textLeft = centerX - (txtFont.getWidth(title)/2);
+        titleHeight = txtFont.getHeight(title)+20;
+        txtLeftsmall = centerX - (txtFontSmall.getWidth(insertName)/2);
+        int x1 = centerX-100;
+        int x2 = centerX+50;
+        int y1 = initTop+titleHeight+30;
+        int y2 = initTop+titleHeight+60;
+        if (nickname != null) {
+            nickname.setLocation(x1, y1);
+            port.setLocation(x2, y1);
+            roomIp.setLocation(x1, y2);
+            serverPort.setLocation(x2, y2);
+        } else {
+            nickname = new TextField(gc, txtFontSmall, x1, y1, 150, 25);
+            nickname.setText("Nickname2".concat(MainClass.playerNr));
+            port = new TextField(gc, txtFontSmall, x2, y1, 50, 25);
+            port.setText("4600".concat(MainClass.playerNr));
+            roomIp = new TextField(gc, txtFontSmall, x1, y2, 150, 25);
+            roomIp.setText("localhost");
+            serverPort = new TextField(gc, txtFontSmall, x2, y2, 50, 25);
+            serverPort.setText("4500");
+        }
         setInputAccepting(true);
     }
     
@@ -68,7 +75,6 @@ public class JoinMenu extends MainMenu {
         nickname.setAcceptingInput(state);
         roomIp.setAcceptingInput(state);
         port.setAcceptingInput(state);
-        room.setAcceptingInput(state);
         serverPort.setAcceptingInput(state);
     }
     
@@ -78,20 +84,21 @@ public class JoinMenu extends MainMenu {
         txtFont.drawString(textLeft, initTop+25, title, txtColor);
         nickname.render(gc, g);
         roomIp.render(gc, g);
-        room.render(gc, g);
         port.render(gc, g);
         serverPort.render(gc, g);
     }
     
     @Override
     public void addButtons() {
-        super.addButton("Back", new GoBack(), centerX-220, MainClass.height-50);
-        super.addButton("Join", new JoinRoom(), centerX+20, MainClass.height-50);
+        setButtonsInputAccepted(false);
+        buttons.clear();
+        super.addButton("Join", new JoinRoom(), 3);
+        super.addButton("Back", new EnterState(MainClass.play), 4);
     }
     
     public class JoinRoom implements ComponentListener {
         public void componentActivated(AbstractComponent ac) {
-            joinRoom(nickname.getText(), Integer.parseInt(port.getText()), roomIp.getText(), Integer.parseInt(serverPort.getText()), room.getText());
+            joinRoom(nickname.getText(), Integer.parseInt(port.getText()), roomIp.getText(), Integer.parseInt(serverPort.getText()));
             sbg.enterState(MainClass.roomViewer);
         }
     }

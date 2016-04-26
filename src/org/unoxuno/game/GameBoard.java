@@ -34,27 +34,16 @@ import org.unoxuno.utilities.GameStrings;
 public class GameBoard extends BasicGameState {
     
     Image gameBG, btnImage, btnOverImage, unoDeck, unoCard, rotateRight, rotateLeft;
-    int state, centerX = MainClass.width/2, 
-        centerY = MainClass.height/2, cardW = 73, cardH=109,
-        maxWidth = MainClass.width-100, playersCardW = cardW/2, 
+    int state, centerX, centerY, cardW = 73, cardH=109,
+        maxWidth, playersCardW = cardW/2, 
         playersCardH = cardH/2, myPosInUsers = 0, 
         mainCardW  = cardW+cardW/3, mainCardH = cardH+cardH/3;
     long systemMills = 0;
     GameContainer gc;
     StateBasedGame sbg;
     private final Map<String,Image> cardImages;
-    private final int[][] playersPosX = new int[][] {{centerX},{20, centerX},{20, centerX,MainClass.width-80},
-                                                    {20, centerX-150,centerX+150,MainClass.width-80},
-                                                    {20, centerX-150, centerX, centerX+150,MainClass.width-80},
-                                                    {20, 20, centerX-150, centerX, centerX+150,MainClass.width-80},
-                                                    {20, 20, centerX-150, centerX, centerX+150,MainClass.width-80, MainClass.width-80},
-                                                    {20, 20, centerX-200, centerX-80, centerX+80, centerX+200,MainClass.width-80, MainClass.width-80}};
-    private final int[][] playersPosY = new int[][] {{20}, {centerY, 20},{centerY, 20, centerY},
-                                                    {centerY, 20, 20, centerY},
-                                                    {centerY, 20, 20, 20, centerY},
-                                                    {centerY+50,centerY-50, 20, 20, 20, centerY},
-                                                    {centerY+50,centerY-50, 20, 20, 20, centerY-50, centerY+50},
-                                                    {centerY+50,centerY-50, 20, 20, 20, 20, centerY-50, centerY+50}};
+    private int[][] playersPosX;
+    private int[][] playersPosY;
     ArrayList<UnoButton> buttons = new ArrayList<UnoButton>();
     ArrayList<UnoCardButton> cardButtons = new ArrayList<UnoCardButton>();
     TrueTypeFont txtFontSmall, txtCardNr;
@@ -85,11 +74,27 @@ public class GameBoard extends BasicGameState {
     public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
         this.gc = gc;
         this.sbg = sbg;
-        
         txtFontSmall = new TrueTypeFont(trueTypeFont.deriveFont(20f), true);
         txtCardNr  = new TrueTypeFont(trueTypeFont.deriveFont(30f), true);
-        initImages();
-        addButtons();
+    }
+    
+    public void setSizes() {
+        centerX = MainClass.width/2;
+        centerY = MainClass.height/2;
+        maxWidth = MainClass.width-100;
+        
+        playersPosX = new int[][] {{centerX},{20, centerX},{20, centerX,MainClass.width-80},
+                                                    {20, centerX-150,centerX+150,MainClass.width-80},
+                                                    {20, centerX-150, centerX, centerX+150,MainClass.width-80},
+                                                    {20, 20, centerX-150, centerX, centerX+150,MainClass.width-80},
+                                                    {20, 20, centerX-150, centerX, centerX+150,MainClass.width-80, MainClass.width-80},
+                                                    {20, 20, centerX-200, centerX-80, centerX+80, centerX+200,MainClass.width-80, MainClass.width-80}};
+        playersPosY = new int[][] {{20}, {centerY, 20},{centerY, 20, centerY},
+                                                        {centerY, 20, 20, centerY},
+                                                        {centerY, 20, 20, 20, centerY},
+                                                        {centerY+50,centerY-50, 20, 20, 20, centerY},
+                                                        {centerY+50,centerY-50, 20, 20, 20, centerY-50, centerY+50},
+                                                        {centerY+50,centerY-50, 20, 20, 20, 20, centerY-50, centerY+50}};
     }
     
     private void addButtons() {
@@ -306,6 +311,10 @@ public class GameBoard extends BasicGameState {
     public void enter(GameContainer gc, StateBasedGame sbg) throws SlickException {
         super.enter(gc, sbg);
         System.out.println("Gioco iniziato!");
+        setSizes();
+        initImages();
+        addButtons();
+        
         setButtonsInputAccepted(true);
         StateChanged lst = new StateChanged();
         MainClass.player.setStateChangeListener(lst);

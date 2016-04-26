@@ -20,7 +20,7 @@ public class RMIUno extends UnicastRemoteObject
 implements IUno{
 
 	private static final long serialVersionUID = 1L;
-	String nickname;
+	String nickname, service_name = "unoxuno";
 	int myId;
 	GameState state;
 	boolean token = false;
@@ -46,7 +46,7 @@ implements IUno{
 			try
 			{
 				IUno tempServer = 
-						(IUno) players_registries.getRegistry(leader_name).lookup(leader_name);
+						(IUno) players_registries.getRegistry(leader_name).lookup(service_name);
 				tempServer.ping();
 				System.out.println("Server pingato e presente!");
 			}
@@ -75,7 +75,7 @@ implements IUno{
 						return;
 					}
 					IUno tempServer = 
-							(IUno) players_registries.getRegistry(actual_username).lookup(actual_username);
+							(IUno) players_registries.getRegistry(actual_username).lookup(service_name);
 					tempServer.youAreTheLeader();
 					checknext = false;
 				}
@@ -104,7 +104,7 @@ implements IUno{
 			localRegistry = LocateRegistry.createRegistry(port);
 		}
 
-		localRegistry.rebind(name, this);
+		localRegistry.rebind(service_name, this);
 		state = new GameState(name);
 		players_registries = new RegistryContainer(name,localRegistry);
 		System.out.println("Binding eseguito su "+name+" in porta "+port);
@@ -116,17 +116,17 @@ implements IUno{
 	public static void main(String[] args) throws RemoteException {
 		RMIUno server = new RMIUno(args[0],Integer.parseInt(args[1]));
 		if (args.length == 5)
-			server.connectSend(args[0],Integer.parseInt(args[4]),args[2],args[3]);
+			server.connectSend(args[0],Integer.parseInt(args[4]),args[3]);
 		server.token = true;
 
 	}
 
-	public void connectSend(String myname, int serverport, String servername, String serverdom){
+	public void connectSend(String myname, int serverport, String serverdom){
 		try
 		{
-			System.out.println("Tentativo di connessione da parte di "+myname+" su "+servername+" con porta "+serverport+" all'indirizzo "+serverdom);
+			System.out.println("Tentativo di connessione da parte di "+myname+" con porta "+serverport+" all'indirizzo "+serverdom);
 			Registry tempRegistry = LocateRegistry.getRegistry(serverdom, serverport);
-			IUno tempServer = (IUno) tempRegistry.lookup(servername);
+			IUno tempServer = (IUno) tempRegistry.lookup(service_name);
 			tempServer.connectReply(myname,localRegistry);
 		}
 		catch(NotBoundException e)
@@ -174,7 +174,7 @@ implements IUno{
 				try
 				{
 					IUno tempServer = 
-							(IUno) reg.get(regname).lookup(regname);
+							(IUno) reg.get(regname).lookup(service_name);
 					tempServer.refreshState(state,players_registries);
 				}
 				catch(ConnectException e)
@@ -341,7 +341,7 @@ implements IUno{
 			if (!regname.equals(nickname)){
 				try{
 					IUno tempServer = 
-							(IUno) reg.get(regname).lookup(regname);
+							(IUno) reg.get(regname).lookup(service_name);
 					GameState temp_state = tempServer.requestState();
 					int temp_state_id = temp_state.getClock();
 					if (temp_state_id > this.state.getClock()){
@@ -385,7 +385,7 @@ implements IUno{
 			if (!regname.equals(nickname)){
 				try{
 					IUno tempServer = 
-							(IUno) reg.get(regname).lookup(regname);
+							(IUno) reg.get(regname).lookup(service_name);
 					tempServer.ping();
 				}
 				catch(NotBoundException e)

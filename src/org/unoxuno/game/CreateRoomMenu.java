@@ -32,18 +32,25 @@ public class CreateRoomMenu extends MainMenu {
     @Override
     public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
         super.init(gc, sbg);
-        int titleHeight = txtFont.getHeight(title);
-        textLeft = centerX - (txtFont.getWidth(title)/2);
-        nickname = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+30, 200, 25);
-        nickname.setText("Nickname");
-        port = new TextField(gc, txtFontSmall, centerX-100, initTop+titleHeight+70, 200, 25);
-        port.setText("4500");
-        setInputAccepting(false);
     }
     
     @Override
     public void enter(GameContainer gc, StateBasedGame sbg) {
         super.enter(gc, sbg);
+        int titleHeight = txtFont.getHeight(title);
+        int x1 = centerX-100;
+        int y1 = initTop+titleHeight+30;
+        int y2 = initTop+titleHeight+70;
+        if (nickname != null) {
+            nickname.setLocation(x1, y1);
+            port.setLocation(x1, y2);
+        } else {
+            nickname = new TextField(gc, txtFontSmall, x1, y1, 200, 25);
+            nickname.setText("Nickname");
+            port = new TextField(gc, txtFontSmall, x1, y2, 200, 25);
+            port.setText("4500");
+        }
+        
         setInputAccepting(true);
     }
     
@@ -61,6 +68,7 @@ public class CreateRoomMenu extends MainMenu {
     @Override
     public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
         super.render(gc, sbg, g);
+        textLeft = centerX - (txtFont.getWidth(title)/2);
         txtFont.drawString(textLeft, initTop+25, title, txtColor);
         nickname.render(gc, g);
         port.render(gc, g);
@@ -68,6 +76,8 @@ public class CreateRoomMenu extends MainMenu {
     
     @Override
     public void addButtons() {
+        setButtonsInputAccepted(false);
+        buttons.clear();
         super.addButton("Create", new CreateRoom(),3);
         super.addButton("Back", new EnterState(MainClass.play),4);
     } 

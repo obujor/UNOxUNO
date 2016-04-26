@@ -36,9 +36,7 @@ public class MainMenu extends BasicGameState {
 	public MainMenu(int s) {
             buttons = new ArrayList<UnoButton>();
             state = s;
-            centerX = MainClass.width/2;
-            centerY = MainClass.height/2;
-            initTop = MainClass.height/3;
+            setSizes();
 	}
 
 	@Override
@@ -55,10 +53,14 @@ public class MainMenu extends BasicGameState {
             txtFont = new TrueTypeFont(trueTypeFont.deriveFont(30f), true);
             txtFontSmall = new TrueTypeFont(trueTypeFont.deriveFont(18f), true);
             initImages();
-            addButtons();
 	}
         
-                
+        public void setSizes() {
+            centerX = MainClass.width/2;
+            centerY = MainClass.height/2;
+            initTop = MainClass.height/3;
+        }
+
         public void initImages() throws SlickException {
             gameBG = new Image("res/images/main_background.jpg");
             btnImage = new Image("res/images/btnBg.png");
@@ -66,6 +68,8 @@ public class MainMenu extends BasicGameState {
         }
         
         public void addButtons() {
+            setButtonsInputAccepted(false);
+            buttons.clear();
             addButton("Play", new EnterState(MainClass.play));
             addButton("Settings", new EnterState(MainClass.settings));
             addButton("Exit", new ExitListener());
@@ -94,6 +98,8 @@ public class MainMenu extends BasicGameState {
         
         @Override
         public void enter(GameContainer gc, StateBasedGame sbg) {
+            setSizes();
+            addButtons();
             if (MainClass.isDebug && state == 0 && !debugCreated) {
                 String room = "Nickname";
                 int port = 4500;
@@ -101,7 +107,7 @@ public class MainMenu extends BasicGameState {
                 if (MainClass.playerNr.equals("0")) {
                     createRoom(room, port);
                 } else {
-                    joinRoom(room.concat(MainClass.playerNr), port+Integer.parseInt(MainClass.playerNr), roomIp, port, room);
+                    joinRoom(room.concat(MainClass.playerNr), port+Integer.parseInt(MainClass.playerNr), roomIp, port);
                     MainClass.player.setReady(true);
                 }
                 debugCreated = true;
@@ -124,10 +130,10 @@ public class MainMenu extends BasicGameState {
 
 	@Override
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
-		g.drawImage(gameBG.getScaledCopy(MainClass.width, MainClass.height), 0, 0);
-                for(UnoButton b : buttons) {
-                    b.render(gc, g);
-                }           
+            g.drawImage(gameBG.getScaledCopy(MainClass.width, MainClass.height), 0, 0);
+            for(UnoButton b : buttons) {
+                b.render(gc, g);
+            }
 	}
 
 	@Override
@@ -181,9 +187,9 @@ public class MainMenu extends BasicGameState {
             createPlayer(nick, port);
         }
         
-        public void joinRoom(String nick, int port, String roomIp, int roomPort, String room) {
+        public void joinRoom(String nick, int port, String roomIp, int roomPort) {
             createPlayer(nick, port);
-            MainClass.player.connectSend(nick, roomPort, room, roomIp);
+            MainClass.player.connectSend(nick, roomPort, roomIp);
         }
         
         private void createPlayer(String nick, int port) {

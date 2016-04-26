@@ -30,14 +30,11 @@ public class UnoButton extends MouseOverArea {
         super(gc, im, x, y, listener);
         this.w = im.getWidth();
         this.h = im.getHeight();
-        this.y = y;
-        this.x = x;
         this.text = text;
         this.gc = gc;
         this.btnFont = new TrueTypeFont(MainMenu.trueTypeFont.deriveFont(30f), true);
-	this.textLeft = this.x + (this.w/2 - (this.btnFont.getWidth(this.text)/2));
-        this.textTop = this.y + (this.h/2 - (this.btnFont.getHeight(this.text)/2));
         this.txtColor = Color.white;
+        setPos(x, y);
     }
     
     @Override
@@ -47,6 +44,14 @@ public class UnoButton extends MouseOverArea {
             this.notifyListeners();
             this.consumeEvent();
         }
+    }
+
+    public void setPos(int x, int y) {
+        super.setLocation(x, y);
+        this.x = x;
+        this.y = y;
+        this.textLeft = this.x + (this.w/2 - (this.btnFont.getWidth(this.text)/2));
+        this.textTop = this.y + (this.h/2 - (this.btnFont.getHeight(this.text)/2));
     }
     
     @Override

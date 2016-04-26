@@ -8,6 +8,8 @@ public class PlayMenu extends MainMenu {
     
     @Override
     public void addButtons() {
+        setButtonsInputAccepted(false);
+        buttons.clear();
         super.addButton("Join room", new EnterState(MainClass.joinRoom));
         super.addButton("Create room", new EnterState(MainClass.createRoom));
         super.addButton("Back", new GoToMainListener());

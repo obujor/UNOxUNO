@@ -33,13 +33,13 @@ public class RoomViewer extends MainMenu {
 	public void init(GameContainer gc, StateBasedGame sbg) throws SlickException {
 		super.init(gc, sbg);
 		titleHeight = txtFont.getHeight(title);
-		textLeft = centerX - (txtFont.getWidth(title)/2);
                 readyTick = new Image("res/images/ok_tick.png").getScaledCopy(20, 20);
 	}
 
 	@Override
 	public void render(GameContainer gc, StateBasedGame sbg, Graphics g) throws SlickException {
 		super.render(gc, sbg, g);
+                textLeft = centerX - (txtFont.getWidth(title)/2);
 		txtFont.drawString(textLeft, initTop+25, title, txtColor);
 		Color prevColor = g.getColor();
 		g.setColor(txtColor);
@@ -57,6 +57,8 @@ public class RoomViewer extends MainMenu {
 
 	@Override
 	public void addButtons() {
+            setButtonsInputAccepted(false);
+            buttons.clear();
 		super.addButton("Back", new GoBack(), centerX-220, MainClass.height-50);
 		super.addButton("Start", new Start(), centerX+20, MainClass.height-50);
 	} 
