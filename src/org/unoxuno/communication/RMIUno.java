@@ -1,6 +1,7 @@
 package org.unoxuno.communication;
 
 import java.rmi.ConnectException;
+import java.rmi.ConnectIOException;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
@@ -50,7 +51,7 @@ implements IUno{
 				tempServer.ping();
 				System.out.println("Server pingato e presente!");
 			}
-			catch(ConnectException e)
+			catch(ConnectIOException | ConnectException e)
 			{
 				checknext = true;
 				System.out.println("Server non presente, elezione");
@@ -79,7 +80,7 @@ implements IUno{
 					tempServer.youAreTheLeader();
 					checknext = false;
 				}
-				catch(ConnectException e){
+				catch(ConnectIOException | ConnectException e){
 					checknext = true;
 				}
 				catch(NotBoundException e)
@@ -101,8 +102,7 @@ implements IUno{
 		this.saidUNO = false;
 		this.already_draw = false;
 		if (localRegistry == null) {
-			AnchorSocketFactory SF = new AnchorSocketFactory();
-			localRegistry = LocateRegistry.createRegistry(port, null, SF);
+			localRegistry = LocateRegistry.createRegistry(port);
 		}
 
 		localRegistry.rebind(service_name, this);
@@ -178,7 +178,7 @@ implements IUno{
 							(IUno) reg.get(regname).lookup(service_name);
 					tempServer.refreshState(state,players_registries);
 				}
-				catch(ConnectException e)
+				catch(ConnectIOException | ConnectException e)
 				{
 					//e.printStackTrace( );
 				}
@@ -353,7 +353,7 @@ implements IUno{
 				{
 					//e.printStackTrace( );
 				}
-				catch(ConnectException e)
+				catch(ConnectIOException | ConnectException e)
 				{
 					users_crashed.add(regname);
 				}
@@ -393,7 +393,7 @@ implements IUno{
 				{
 					//e.printStackTrace( );
 				}
-				catch(ConnectException e)
+				catch(ConnectIOException | ConnectException e)
 				{
 					users_crashed.add(regname);
 				}
