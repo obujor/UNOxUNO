@@ -101,7 +101,8 @@ implements IUno{
 		this.saidUNO = false;
 		this.already_draw = false;
 		if (localRegistry == null) {
-			localRegistry = LocateRegistry.createRegistry(port);
+			AnchorSocketFactory SF = new AnchorSocketFactory();
+			localRegistry = LocateRegistry.createRegistry(port, null, SF);
 		}
 
 		localRegistry.rebind(service_name, this);
