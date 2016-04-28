@@ -17,7 +17,7 @@ ant build && cd bin
 if [ -z ${1+x} ]; then nr=0; else nr=$[$1 - 1]; fi
 for i in `seq 0 $nr`;
 do 
-cmd="java -Djava.library.path=../lib/native:../lib/native -Dfile.encoding=UTF-8 -classpath .:../lib/jinput.jar:../lib/lwjgl_util.jar:../lib/lwjgl.jar:../lib/slick.jar org.unoxuno.game.MainClass $i $2 &"
+cmd="java -Djava.library.path=../lib/native:../lib/native -Dsun.rmi.transport.connectionTimeout=5000 -Dsun.rmi.transport.tcp.handshakeTimeout=5000 -Dsun.rmi.transport.tcp.responseTimeout=5000 -Dsun.rmi.transport.tcp.readTimeout=5000 -Dfile.encoding=UTF-8 -classpath .:../lib/jinput.jar:../lib/lwjgl_util.jar:../lib/lwjgl.jar:../lib/slick.jar org.unoxuno.game.MainClass $i $2 &"
 eval xterm -hold -T $i -e $cmd;
 echo Launched $i
 sleep 2;
