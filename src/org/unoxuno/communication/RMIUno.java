@@ -33,6 +33,7 @@ implements IUno{
 	boolean already_draw;
 	public final Lock lockCards = new ReentrantLock();
 	public final Lock lockUsers = new ReentrantLock();
+        public final Lock lockLeader = new ReentrantLock();
 	boolean stateChanged = true;
 
 	private class PingTask extends TimerTask{
@@ -336,6 +337,8 @@ implements IUno{
 
 	@Override
 	public boolean youAreTheLeader() throws RemoteException {
+            if(state.isMyTurn(nickname) || !lockLeader.tryLock()) return false;
+            System.out.println("You are the leader");
 		Map<String,Registry> reg = players_registries.getAllRegistries();
 		ArrayList<String> users_crashed = new ArrayList<String>();
 		for (String regname : state.getUsernames()){
@@ -369,6 +372,7 @@ implements IUno{
 		}
 		this.myId = this.state.getUserId(nickname);
 		this.state.setAsMyTurn(myId);
+                lockLeader.unlock();
 		refreshAllStates();
 		return true;
 	}
