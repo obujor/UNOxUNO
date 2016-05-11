@@ -243,6 +243,7 @@ implements IUno{
 		lockCards.lock();
 		Card last_discarded = state.getLastDiscardedCard();
 		lockCards.unlock();
+                System.out.println("Last discarded "+last_discarded.getColor()+" "+last_discarded.getEffect());
 		return c.compatibleWith(last_discarded);
 	}
 

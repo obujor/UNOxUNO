@@ -230,7 +230,7 @@ public class GameState implements Serializable{
 		lock.lock();
 		String name = users.remove(id);
 		for (Card c : hand.get(name))
-			discarded.add(c);
+			discarded.add(0, c);
 		hand.remove(name);
 		user_ready.remove(name);
 		user_penalities.remove(name);
